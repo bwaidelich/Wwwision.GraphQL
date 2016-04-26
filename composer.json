@@ -1,0 +1,24 @@
+{
+    "description": "Base package to create GraphQL endpoints with Flow",
+    "type": "neos-package",
+    "name": "wwwision/graphql",
+    "require": {
+        "typo3/flow": "~3.0",
+        "webonyx/graphql-php": "~0.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wwwision\\GraphQL\\": "Classes"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wwwision\\GraphQL\\Tests\\": "Tests"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "Wwwision.GraphQL"
+        }
+    }
+}

@@ -1,0 +1,23 @@
+<!--
+ *  Copyright (c) 2015, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="../../../Public/Styles/graphiql.css" />
+    <link rel="stylesheet" href="../../../Public/Styles/app.css" />
+    <script src="../../../Public/Scripts/fetch.min.js"></script>
+    <script src="../../../Public/Scripts/react.min.js"></script>
+    <script src="../../../Public/Scripts/react-dom.min.js"></script>
+    <script src="../../../Public/Scripts/graphiql.min.js"></script>
+  </head>
+  <body>
+    <div id="graphiql">Loading...</div>
+    <script src="../../../Public/Scripts/app.js" data-graphql-enpoint="{f:uri.action(action: 'query', arguments:'{endpoint: endpoint}')}"></script>
+  </body>
+</html>
