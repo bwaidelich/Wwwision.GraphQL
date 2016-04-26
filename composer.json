@@ -3,7 +3,6 @@
     "type": "neos-package",
     "name": "wwwision/graphql",
     "require": {
-        "typo3/flow": "~3.0",
         "webonyx/graphql-php": "~0.6"
     },
     "autoload": {
