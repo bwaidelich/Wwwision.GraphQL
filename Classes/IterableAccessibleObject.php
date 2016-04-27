@@ -59,11 +59,23 @@ class IterableAccessibleObject implements \Iterator
     }
 
     /**
+     * @return \Iterator
+     */
+    public function getIterator()
+    {
+        return $this->innerIterator;
+    }
+
+    /**
      * @return AccessibleObject
      */
     public function current()
     {
-        return new AccessibleObject($this->innerIterator->current());
+        $currentElement = $this->innerIterator->current();
+        if (is_object($currentElement)) {
+            return new AccessibleObject($currentElement);
+        }
+        return $currentElement;
     }
 
     /**

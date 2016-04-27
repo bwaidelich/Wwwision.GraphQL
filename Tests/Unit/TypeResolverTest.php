@@ -2,11 +2,21 @@
 namespace Wwwision\GraphQL\Tests\Unit;
 
 use TYPO3\Flow\Tests\UnitTestCase;
-use Wwwision\GraphQL\AccessibleObject;
+use Wwwision\GraphQL\Tests\Unit\Fixtures\ExampleType;
 use Wwwision\GraphQL\TypeResolver;
 
 class TypeResolverTest extends UnitTestCase
 {
+
+    /**
+     * @var TypeResolver
+     */
+    protected $typeResolver;
+
+    public function setUp()
+    {
+        $this->typeResolver = new TypeResolver();
+    }
 
     /**
      * @test
@@ -14,7 +24,7 @@ class TypeResolverTest extends UnitTestCase
      */
     public function getThrowsExceptionIfTypeClassNameIsNoString()
     {
-        new TypeResolver(123);
+        $this->typeResolver->get(123);
     }
 
     /**
@@ -23,6 +33,25 @@ class TypeResolverTest extends UnitTestCase
      */
     public function getThrowsExceptionIfTypeClassNameIsNoValidTypeDefinition()
     {
-        new TypeResolver(new \stdClass());
+        $this->typeResolver->get('stdClass');
+    }
+
+    /**
+     * @test
+     */
+    public function getSupportsRecursiveTypes()
+    {
+        $exampleType = $this->typeResolver->get(ExampleType::class);
+        $this->assertSame('ExampleType', $exampleType->name);
+    }
+
+    /**
+     * @test
+     */
+    public function getReturnsTheSameInstancePerType()
+    {
+        $exampleType1 = $this->typeResolver->get(ExampleType::class);
+        $exampleType2 = $this->typeResolver->get(ExampleType::class);
+        $this->assertSame($exampleType1, $exampleType2);
     }
 }

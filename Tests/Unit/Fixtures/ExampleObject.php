@@ -1,16 +1,17 @@
 <?php
 namespace Wwwision\GraphQL\Tests\Unit\Fixtures;
 
-
+/**
+ * Dummy object for (Iterable)AccessibleObject tests
+ */
 class ExampleObject
 {
     private $string;
 
     /**
-     * ExampleObject constructor.
      * @param $string
      */
-    public function __construct($string)
+    public function __construct($string = 'default')
     {
         $this->string = $string;
     }
@@ -56,5 +57,10 @@ class ExampleObject
     public function getSomeSubObjectsIterator()
     {
         return new \ArrayIterator($this->getSomeSubObjectsArray());
+    }
+
+    public function __toString()
+    {
+        return 'ExampleObject (string-casted)';
     }
 }

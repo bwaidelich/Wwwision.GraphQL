@@ -25,7 +25,7 @@ class StandardController extends ActionController
     protected $supportedMediaTypes = ['application/json', 'text/html'];
 
     /**
-     * @param string $endpoint
+     * @param string $endpoint The GraphQL endpoint, to allow for providing multiple APIs (this value is set from the routing usually)
      * @return void
      */
     public function indexAction($endpoint)
@@ -35,10 +35,10 @@ class StandardController extends ActionController
     }
 
     /**
-     * @param string $endpoint
-     * @param string $query
-     * @param string $variables
-     * @param string $operationName
+     * @param string $endpoint The GraphQL endpoint, to allow for providing multiple APIs (this value is set from the routing usually)
+     * @param string $query The GraphQL query string (see GraphQL::execute())
+     * @param string $variables JSON-encoded list of variables (if any, see GraphQL::execute())
+     * @param string $operationName The operation to execute (if multiple, see GraphQL::execute())
      * @return string
      * @Flow\SkipCsrfProtection
      */
@@ -47,6 +47,7 @@ class StandardController extends ActionController
         $this->verifySettings($endpoint);
         $decodedVariables = json_decode($variables, true);
         try {
+
             $querySchema = $this->typeResolver->get($this->settings['endpoints'][$endpoint]['querySchema']);
             $mutationSchema = isset($this->settings['endpoints'][$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']) : null;
             $subscriptionSchema = isset($this->settings['endpoints'][$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']) : null;

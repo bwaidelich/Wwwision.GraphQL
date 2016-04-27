@@ -83,7 +83,7 @@ class AccessibleObject implements \ArrayAccess
             return (boolean)call_user_func([$this->object, $propertyName]);
         }
         $result = ObjectAccess::getProperty($this->object, $propertyName);
-        if ($result instanceof \Iterator) {
+        if (is_array($result) || $result instanceof \Iterator) {
             return new IterableAccessibleObject($result);
         }
         if ($result instanceof \DateTimeInterface) {
@@ -111,5 +111,16 @@ class AccessibleObject implements \ArrayAccess
     {
         throw new \RuntimeException('The AccessibleObject wrapper does not allow for mutation!', 1460895625);
     }
+
+    /**
+     * This is required in order to implicitly cast wrapped string types for example
+     *
+     * @return string
+     */
+    function __toString()
+    {
+        return (string)$this->object;
+    }
+
 
 }

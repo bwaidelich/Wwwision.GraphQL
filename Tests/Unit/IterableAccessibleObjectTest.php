@@ -3,6 +3,7 @@ namespace Wwwision\GraphQL\Tests\Unit;
 
 use TYPO3\Flow\Tests\UnitTestCase;
 use Wwwision\GraphQL\AccessibleObject;
+use Wwwision\GraphQL\IterableAccessibleObject;
 use Wwwision\GraphQL\Tests\Unit\Fixtures\ExampleObject;
 
 require_once __DIR__ . '/Fixtures/ExampleObject.php';
@@ -11,105 +12,75 @@ class IterableAccessibleObjectTest extends UnitTestCase
 {
 
     /**
-     * @test
+     * @var IterableAccessibleObject (wrapping instances of ExampleObject)
      */
-    public function getObjectReturnsTheUnalteredObject()
+    protected $iterableAccessibleObject;
+
+    public function setUp()
     {
-        $object = new \stdClass();
-        $accessibleObject = new AccessibleObject($object);
-        $this->assertSame($object, $accessibleObject->getObject());
+        $this->iterableAccessibleObject = new IterableAccessibleObject([
+            new ExampleObject('Foo'),
+            new ExampleObject('Bar')
+        ]);
+    }
+
+    /**
+     * @test
+     * @expectedException \InvalidArgumentException
+     */
+    public function constructorThrowsExceptionWhenPassedNull()
+    {
+        new IterableAccessibleObject(null);
+    }
+
+    /**
+     * @test
+     * @expectedException \InvalidArgumentException
+     */
+    public function constructorThrowsExceptionWhenPassedNonIterableObject()
+    {
+        /** @noinspection PhpParamsInspection */
+        new IterableAccessibleObject(new \stdClass());
     }
 
     /**
      * @test
      */
-    public function offsetExistsReturnsFalseIfObjectIsNotSet()
+    public function constructorConvertsArraysToArrayIterator()
     {
-        $accessibleObject = new AccessibleObject(null);
-        $this->assertFalse($accessibleObject->offsetExists('foo'));
-    }
-
-    public function simpleOffsetGetDataProvider()
-    {
-        return [
-            ['someString', 'Foo'],
-            ['someArray', ['string' => 'Foo', 'neos' => 'rocks']],
-            ['isFoo', true],
-            ['hasBar', false],
-
-            // unresolved:
-            ['SomeString', null],
-            ['somestring', null],
-            ['foo', null],
-            ['bar', null],
-            ['unknown', null],
-        ];
-    }
-
-    /**
-     * @test
-     * @dataProvider simpleOffsetGetDataProvider
-     */
-    public function simpleOffsetGetTests($propertyName, $expectedValue)
-    {
-        $accessibleObject = new AccessibleObject(new ExampleObject('Foo'));
-        $this->assertSame($expectedValue, $accessibleObject[$propertyName]);
+        $someArray = ['foo' => 'Foo', 'bar' => 'Bar'];
+        $iterableAccessibleObject = new IterableAccessibleObject($someArray);
+        $this->assertInstanceOf(\ArrayIterator::class, $iterableAccessibleObject->getIterator());
+        $this->assertSame($someArray, iterator_to_array($iterableAccessibleObject->getIterator()));
     }
 
     /**
      * @test
      */
-    public function offsetWrapsArraySubObjects()
+    public function getIteratorReturnsTheUnalteredInnerIterator()
     {
-        //TODO
-
+        $someIterator = new \ArrayIterator(['foo' => 'Foo', 'bar' => 'Bar']);
+        $iterableAccessibleObject = new IterableAccessibleObject($someIterator);
+        $this->assertSame($someIterator, $iterableAccessibleObject->getIterator());
     }
 
     /**
      * @test
      */
-    public function offsetWrapsIterableSubObjects()
+    public function currentObjectElementsAreWrapped()
     {
-        //TODO
-
+        $this->assertInstanceOf(AccessibleObject::class, $this->iterableAccessibleObject->current());
+        $this->assertSame('Foo', $this->iterableAccessibleObject->current()['someString']);
     }
 
-    /**
+   /**
      * @test
      */
-    public function offsetGetReturnsDateTimeProperties()
+    public function currentScalarElementsAreNotWrapped()
     {
-        $accessibleObject = new AccessibleObject(new ExampleObject('Foo'));
-        #$this->assertInstanceOf
-        $this->assertSame('13.12.1980', $accessibleObject['someDate']->format('d.m.Y'));
-    }
+        $arrayProperty = ['foo' => 'Foo', 'bar' => 'Bar'];
+        $iterableAccessibleObject = new IterableAccessibleObject([$arrayProperty]);
 
-    /**
-     * @test
-     */
-    public function offsetGetWrapsSubObjects()
-    {
-        $accessibleObject = new AccessibleObject(new ExampleObject('Foo'));
-        $this->assertSame('Foo nested nested', $accessibleObject['someSubObject']['someSubObject']['someString']);
-    }
-
-    /**
-     * @test
-     * @expectedException \RuntimeException
-     */
-    public function offsetSetThrowsException()
-    {
-        $accessibleObject = new AccessibleObject(new ExampleObject('Foo'));
-        $accessibleObject['someString'] = 'This must not be possible';
-    }
-
-    /**
-     * @test
-     * @expectedException \RuntimeException
-     */
-    public function offsetUnsetThrowsException()
-    {
-        $accessibleObject = new AccessibleObject(new ExampleObject('Foo'));
-        unset($accessibleObject['someString']);
+        $this->assertSame($arrayProperty, $iterableAccessibleObject->current());
     }
 }
