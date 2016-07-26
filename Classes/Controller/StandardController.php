@@ -6,6 +6,7 @@ use GraphQL\Schema;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Mvc\Controller\ActionController;
 use Wwwision\GraphQL\TypeResolver;
+use Wwwision\GraphQL\View\GraphQlView;
 
 /**
  * Default controller serving a GraphiQL interface as well as the GraphQL endpoint
@@ -23,6 +24,11 @@ class StandardController extends ActionController
      * @var array
      */
     protected $supportedMediaTypes = ['application/json', 'text/html'];
+
+    /**
+     * @var array
+     */
+    protected $viewFormatToObjectNameMap = ['json' => GraphQlView::class];
 
     /**
      * @param string $endpoint The GraphQL endpoint, to allow for providing multiple APIs (this value is set from the routing usually)
@@ -46,18 +52,13 @@ class StandardController extends ActionController
     {
         $this->verifySettings($endpoint);
         $decodedVariables = json_decode($variables, true);
-        try {
 
-            $querySchema = $this->typeResolver->get($this->settings['endpoints'][$endpoint]['querySchema']);
-            $mutationSchema = isset($this->settings['endpoints'][$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']) : null;
-            $subscriptionSchema = isset($this->settings['endpoints'][$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']) : null;
-            $schema = new Schema($querySchema, $mutationSchema, $subscriptionSchema);
-            $result = GraphQL::execute($schema, $query, null, $decodedVariables, $operationName);
-        } catch (\Exception $exception) {
-            $result = ['errors' => [['message' => $exception->getMessage()]]];
-        }
-        header('Content-Type: application/json');
-        return json_encode($result);
+        $querySchema = $this->typeResolver->get($this->settings['endpoints'][$endpoint]['querySchema']);
+        $mutationSchema = isset($this->settings['endpoints'][$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']) : null;
+        $subscriptionSchema = isset($this->settings['endpoints'][$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']) : null;
+        $schema = new Schema($querySchema, $mutationSchema, $subscriptionSchema);
+        $result = GraphQL::executeAndReturnResult($schema, $query, null, $decodedVariables, $operationName);
+        $this->view->assign('result', $result);
     }
 
     /**
