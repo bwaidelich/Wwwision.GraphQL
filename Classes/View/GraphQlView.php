@@ -53,6 +53,7 @@ class GraphQlView extends AbstractView
                 $exception = $error->getPrevious();
                 if ($exception instanceof FlowException) {
                     $errorResult['message'] = HttpResponse::getStatusMessageByCode($exception->getStatusCode());
+                    $errorResult['_exceptionCode'] = $exception->getCode();
                     $errorResult['_statusCode'] = $exception->getStatusCode();
                     $errorResult['_referenceCode'] = $exception->getReferenceCode();
                 }
