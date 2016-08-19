@@ -1,3 +1,12 @@
+TYPO3:
+  Flow:
+    http:
+      chain:
+        'process':
+          chain:
+            'graphQLOptions':
+              position: 'before routing'
+              component: 'Wwwision\GraphQL\Http\HttpOptionsComponent'
 Wwwision:
   GraphQL:
     endpoints: []
