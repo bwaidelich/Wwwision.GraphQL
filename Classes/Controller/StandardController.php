@@ -43,7 +43,7 @@ class StandardController extends ActionController
     /**
      * @param string $endpoint The GraphQL endpoint, to allow for providing multiple APIs (this value is set from the routing usually)
      * @param string $query The GraphQL query string (see GraphQL::execute())
-     * @param string $variables JSON-encoded list of variables (if any, see GraphQL::execute())
+     * @param array $variables list of variables (if any, see GraphQL::execute()). Note: The variables can be JSON-serialized to a string (like GraphiQL does) or a "real" array
      * @param string $operationName The operation to execute (if multiple, see GraphQL::execute())
      * @return string
      * @Flow\SkipCsrfProtection
@@ -51,13 +51,15 @@ class StandardController extends ActionController
     public function queryAction($endpoint, $query, $variables = null, $operationName = null)
     {
         $this->verifySettings($endpoint);
-        $decodedVariables = json_decode($variables, true);
+        if ($variables !== null && is_string($this->request->getArgument('variables'))) {
+            $variables = json_decode($this->request->getArgument('variables'), true);
+        }
 
         $querySchema = $this->typeResolver->get($this->settings['endpoints'][$endpoint]['querySchema']);
         $mutationSchema = isset($this->settings['endpoints'][$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']) : null;
         $subscriptionSchema = isset($this->settings['endpoints'][$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']) : null;
         $schema = new Schema($querySchema, $mutationSchema, $subscriptionSchema);
-        $result = GraphQL::executeAndReturnResult($schema, $query, null, $decodedVariables, $operationName);
+        $result = GraphQL::executeAndReturnResult($schema, $query, null, $variables, $operationName);
         $this->view->assign('result', $result);
     }
 
