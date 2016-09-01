@@ -5,11 +5,18 @@ use GraphQL\Error;
 use GraphQL\Executor\ExecutionResult;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Http\Response as HttpResponse;
+use TYPO3\Flow\Log\SystemLoggerInterface;
 use TYPO3\Flow\Mvc\View\AbstractView;
 use TYPO3\Flow\Exception as FlowException;
 
 class GraphQlView extends AbstractView
 {
+
+    /**
+     * @Flow\Inject
+     * @var SystemLoggerInterface
+     */
+    protected $systemLogger;
 
     /**
      * @return string The rendered view
@@ -56,6 +63,9 @@ class GraphQlView extends AbstractView
                     $errorResult['_exceptionCode'] = $exception->getCode();
                     $errorResult['_statusCode'] = $exception->getStatusCode();
                     $errorResult['_referenceCode'] = $exception->getReferenceCode();
+                }
+                if ($exception instanceof \Exception) {
+                    $this->systemLogger->logException($exception);
                 }
                 return $errorResult;
             }, $executionResult->errors);
