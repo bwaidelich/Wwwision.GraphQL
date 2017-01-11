@@ -7,7 +7,7 @@ use TYPO3\Flow\Http\Component\ComponentContext;
 use TYPO3\Flow\Http\Component\ComponentInterface;
 
 /**
- * A simple HTTP Component that captures OPTIONS requests and reponds with a general "Allow: GET, POST" header if a matching graphQL endpoint is configured
+ * A simple HTTP Component that captures OPTIONS requests and responds with a general "Allow: GET, POST" header if a matching graphQL endpoint is configured
  */
 class HttpOptionsComponent implements ComponentInterface
 {

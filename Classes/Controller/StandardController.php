@@ -45,7 +45,7 @@ class StandardController extends ActionController
      * @param string $query The GraphQL query string (see GraphQL::execute())
      * @param array $variables list of variables (if any, see GraphQL::execute()). Note: The variables can be JSON-serialized to a string (like GraphiQL does) or a "real" array
      * @param string $operationName The operation to execute (if multiple, see GraphQL::execute())
-     * @return string
+     * @return void
      * @Flow\SkipCsrfProtection
      */
     public function queryAction($endpoint, $query, $variables = null, $operationName = null)
@@ -59,7 +59,7 @@ class StandardController extends ActionController
         $mutationSchema = isset($this->settings['endpoints'][$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']) : null;
         $subscriptionSchema = isset($this->settings['endpoints'][$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']) : null;
         $schema = new Schema($querySchema, $mutationSchema, $subscriptionSchema);
-        $result = GraphQL::executeAndReturnResult($schema, $query, null, $variables, $operationName);
+        $result = GraphQL::executeAndReturnResult($schema, $query, null, null, $variables, $operationName);
         $this->view->assign('result', $result);
     }
 

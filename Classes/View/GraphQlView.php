@@ -1,7 +1,7 @@
 <?php
 namespace Wwwision\GraphQL\View;
 
-use GraphQL\Error;
+use GraphQL\Error\Error;
 use GraphQL\Executor\ExecutionResult;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Http\Response as HttpResponse;
