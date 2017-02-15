@@ -1,7 +1,7 @@
 <?php
 namespace Wwwision\GraphQL\Tests\Unit;
 
-use TYPO3\Flow\Tests\UnitTestCase;
+use Neos\Flow\Tests\UnitTestCase;
 use Wwwision\GraphQL\Tests\Unit\Fixtures\ExampleType;
 use Wwwision\GraphQL\TypeResolver;
 

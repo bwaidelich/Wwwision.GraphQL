@@ -3,11 +3,11 @@ namespace Wwwision\GraphQL\View;
 
 use GraphQL\Error\Error;
 use GraphQL\Executor\ExecutionResult;
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Http\Response as HttpResponse;
-use TYPO3\Flow\Log\SystemLoggerInterface;
-use TYPO3\Flow\Mvc\View\AbstractView;
-use TYPO3\Flow\Exception as FlowException;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Http\Response as HttpResponse;
+use Neos\Flow\Log\SystemLoggerInterface;
+use Neos\Flow\Mvc\View\AbstractView;
+use Neos\Flow\Exception as FlowException;
 
 class GraphQlView extends AbstractView
 {

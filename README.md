@@ -75,7 +75,7 @@ And, lastly, activate the corresponding routes:
 `Settings.yaml`:
 
 ```yaml
-TYPO3:
+Neos:
   Flow:
     mvc:
       routes:

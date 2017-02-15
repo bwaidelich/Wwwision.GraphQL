@@ -3,7 +3,7 @@ namespace Wwwision\GraphQL;
 
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
 /**
  * A type resolver (aka factory) for GraphQL type definitions.

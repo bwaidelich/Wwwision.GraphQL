@@ -1,10 +1,10 @@
 <?php
 namespace Wwwision\GraphQL\Http;
 
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Http\Component\ComponentChain;
-use TYPO3\Flow\Http\Component\ComponentContext;
-use TYPO3\Flow\Http\Component\ComponentInterface;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Http\Component\ComponentChain;
+use Neos\Flow\Http\Component\ComponentContext;
+use Neos\Flow\Http\Component\ComponentInterface;
 
 /**
  * A simple HTTP Component that captures OPTIONS requests and responds with a general "Allow: GET, POST" header if a matching graphQL endpoint is configured

@@ -3,8 +3,8 @@ namespace Wwwision\GraphQL\Controller;
 
 use GraphQL\GraphQL;
 use GraphQL\Schema;
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Mvc\Controller\ActionController;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Mvc\Controller\ActionController;
 use Wwwision\GraphQL\TypeResolver;
 use Wwwision\GraphQL\View\GraphQlView;
 

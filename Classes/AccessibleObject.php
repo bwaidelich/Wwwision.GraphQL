@@ -1,8 +1,8 @@
 <?php
 namespace Wwwision\GraphQL;
 
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Reflection\ObjectAccess;
+use Neos\Flow\Annotations as Flow;
+use Neos\Utility\ObjectAccess;
 
 /**
  * A proxy that exposes all getters of a given object through an ArrayAccess interface

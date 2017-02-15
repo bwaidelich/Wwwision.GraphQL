@@ -1,7 +1,7 @@
 <?php
 namespace Wwwision\GraphQL;
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
 /**
  * A proxy that recursively exposes all getters of objects within a collection (\Iterator or array) through an ArrayAccess interface

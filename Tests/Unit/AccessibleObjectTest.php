@@ -1,7 +1,7 @@
 <?php
 namespace Wwwision\GraphQL\Tests\Unit;
 
-use TYPO3\Flow\Tests\UnitTestCase;
+use Neos\Flow\Tests\UnitTestCase;
 use Wwwision\GraphQL\AccessibleObject;
 use Wwwision\GraphQL\IterableAccessibleObject;
 use Wwwision\GraphQL\Tests\Unit\Fixtures\ExampleObject;
@@ -74,7 +74,7 @@ class AccessibleObjectTest extends UnitTestCase
 
     /**
      * @test
-     * @expectedException \TYPO3\Flow\Reflection\Exception\PropertyNotAccessibleException
+     * @expectedException \Neos\Utility\Exception\PropertyNotAccessibleException
      */
     public function offsetGetThrowsExceptionForUnknownProperties()
     {
