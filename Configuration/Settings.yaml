@@ -2,9 +2,9 @@ Neos:
   Flow:
     http:
       chain:
-        process:
+        'process':
           chain:
-            graphQLOptions:
+            'graphQLOptions':
               position: 'before routing'
               component: 'Wwwision\GraphQL\Http\HttpOptionsComponent'
 
