@@ -14,6 +14,7 @@ It is a wrapper for the [PHP port of webonyx](https://github.com/webonyx/graphql
 * A `StandardController` that renders the [GraphiQL IDE](https://github.com/graphql/graphiql) and acts as dispatcher
   for API calls
 * A HTTP Component that responds to `OPTIONS` requests correctly (required for CORS preflight requests for example)
+* A custom `GraphQLContext` that is available in all resolvers and allows access to the current HTTP Request
 
 ## Installation
 
@@ -106,3 +107,25 @@ activate routes in your global `Routes.yaml` file:
 ![](graphiql.png)
 
 For a more advanced example, have a look at the [Neos Content Repository implementation](https://github.com/bwaidelich/Wwwision.Neos.GraphQL)
+
+## Custom context
+
+Resolvers should be as simple and self-contained as possible. But sometimes it's useful to have access to the current
+HTTP request. For example in order to do explicit authentication or to render URLs.
+With v2.1+ there's a new `GraphQLContext` accessible to all resolvers that allows to access the current HTTP request:
+
+```php
+<?php
+// ...
+use Wwwision\GraphQL\GraphQLContext;
+// ...
+
+        'resolve' => function ($value, array $args, GraphQLContext $context) {
+            $baseUri = $context->getHttpRequest()->getBaseUri();
+            // ...
+        },
+```
+
+`$value` is the object containing the field. Its value is `null` on the root mutation/query.
+`$args` is the array of arguments specified for that field. It's an empty array if no arguments have been specified.
+`$context` is an instance of the `GraphQLContext` with a getter for the current HTTP request.

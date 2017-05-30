@@ -5,6 +5,7 @@ use GraphQL\GraphQL;
 use GraphQL\Schema;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Controller\ActionController;
+use Wwwision\GraphQL\GraphQLContext;
 use Wwwision\GraphQL\TypeResolver;
 use Wwwision\GraphQL\View\GraphQlView;
 
@@ -59,7 +60,8 @@ class StandardController extends ActionController
         $mutationSchema = isset($this->settings['endpoints'][$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']) : null;
         $subscriptionSchema = isset($this->settings['endpoints'][$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']) : null;
         $schema = new Schema($querySchema, $mutationSchema, $subscriptionSchema);
-        $result = GraphQL::executeAndReturnResult($schema, $query, null, null, $variables, $operationName);
+        $context = new GraphQLContext($this->request->getHttpRequest());
+        $result = GraphQL::executeAndReturnResult($schema, $query, null, $context, $variables, $operationName);
         $this->view->assign('result', $result);
     }
 
