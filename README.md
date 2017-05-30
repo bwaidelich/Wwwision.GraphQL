@@ -13,6 +13,7 @@ It is a wrapper for the [PHP port of webonyx](https://github.com/webonyx/graphql
   the GraphQL API
 * A `StandardController` that renders the [GraphiQL IDE](https://github.com/graphql/graphiql) and acts as dispatcher
   for API calls
+* A HTTP Component that responds to `OPTIONS` requests correctly (required for CORS preflight requests for example)
 
 ## Installation
 
@@ -103,6 +104,5 @@ activate routes in your global `Routes.yaml` file:
 **Congratulations**, your first GraphQL API is done and you should be able to invoke the GraphiQL IDE by browsing to `/test`:
 
 ![](graphiql.png)
-
 
 For a more advanced example, have a look at the [Neos Content Repository implementation](https://github.com/bwaidelich/Wwwision.Neos.GraphQL)
