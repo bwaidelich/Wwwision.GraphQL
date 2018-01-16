@@ -64,18 +64,27 @@ class SchemaCache
             $this->buildForEndpoint($endpoint);
         }
 
+        $configuration = $this->endpointsConfiguration[$endpoint];
+        $resolverConfiguration = $configuration['resolvers'] ?? [];
+        $resolverPathPattern = $configuration['resolverPathPattern'] ?? null;
         $code = $this->cache->requireOnce($endpoint);
         $document = AST::fromArray($code);
 
         /** @var Resolver[] $resolvers */
         $resolvers = [];
 
-        return BuildSchema::build($document, function ($config) use ($endpoint, $resolvers) {
+        return BuildSchema::build($document, function ($config) use ($resolvers, $resolverConfiguration, $resolverPathPattern) {
             $name = $config['name'];
 
-
-            if (!isset($resolvers[$name]) && isset($this->endpointsConfiguration[$endpoint]['resolvers'][$name])) {
-                $resolvers[$name] = $this->objectManager->get($this->endpointsConfiguration[$endpoint]['resolvers'][$name]);
+            if (!isset($resolvers[$name])) {
+                if (isset($resolverConfiguration[$name])) {
+                    $resolvers[$name] = $this->objectManager->get($resolverConfiguration[$name]);
+                } else if ($resolverPathPattern !== null) {
+                    $possibleResolverName = str_replace('{Type}', $name, $resolverPathPattern);
+                    if (class_exists($possibleResolverName)) {
+                        $resolvers[$name] = $this->objectManager->get($possibleResolverName);
+                    }
+                }
             }
 
             if (isset($resolvers[$name])) {
