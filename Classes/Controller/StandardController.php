@@ -2,10 +2,10 @@
 namespace Wwwision\GraphQL\Controller;
 
 use GraphQL\GraphQL;
-use GraphQL\Schema;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Controller\ActionController;
 use Wwwision\GraphQL\GraphQLContext;
+use Wwwision\GraphQL\SchemaService;
 use Wwwision\GraphQL\TypeResolver;
 use Wwwision\GraphQL\View\GraphQlView;
 
@@ -20,6 +20,12 @@ class StandardController extends ActionController
      * @var TypeResolver
      */
     protected $typeResolver;
+
+    /**
+     * @Flow\Inject
+     * @var SchemaService
+     */
+    protected $schemaService;
 
     /**
      * @var array
@@ -37,7 +43,7 @@ class StandardController extends ActionController
      */
     public function indexAction($endpoint)
     {
-        $this->verifySettings($endpoint);
+        $this->schemaService->verifySettings($endpoint);
         $this->view->assign('endpoint', $endpoint);
     }
 
@@ -51,32 +57,15 @@ class StandardController extends ActionController
      */
     public function queryAction($endpoint, $query, $variables = null, $operationName = null)
     {
-        $this->verifySettings($endpoint);
         if ($variables !== null && is_string($this->request->getArgument('variables'))) {
             $variables = json_decode($this->request->getArgument('variables'), true);
         }
 
-        $querySchema = $this->typeResolver->get($this->settings['endpoints'][$endpoint]['querySchema']);
-        $mutationSchema = isset($this->settings['endpoints'][$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']) : null;
-        $subscriptionSchema = isset($this->settings['endpoints'][$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']) : null;
-        $schema = new Schema($querySchema, $mutationSchema, $subscriptionSchema);
+        $schema = $this->schemaService->getSchemaForEndpoint($endpoint);
         $context = new GraphQLContext($this->request->getHttpRequest());
-        $result = GraphQL::executeAndReturnResult($schema, $query, null, $context, $variables, $operationName);
+        GraphQL::setDefaultFieldResolver([SchemaService::class, 'defaultFieldResolver']);
+        $result = GraphQL::executeQuery($schema, $query, null, $context, $variables, $operationName);
         $this->view->assign('result', $result);
-    }
-
-    /**
-     * @param string $endpoint
-     * @return void
-     */
-    private function verifySettings($endpoint)
-    {
-        if (!isset($this->settings['endpoints'][$endpoint])) {
-            throw new \InvalidArgumentException(sprintf('The endpoint "%s" is not configured.', $endpoint), 1461435428);
-        }
-        if (!isset($this->settings['endpoints'][$endpoint]['querySchema'])) {
-            throw new \InvalidArgumentException(sprintf('There is no root query schema configured for endpoint "%s".', $endpoint), 1461435432);
-        }
     }
 
 }
