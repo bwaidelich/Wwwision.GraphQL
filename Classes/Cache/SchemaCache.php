@@ -42,7 +42,8 @@ final class SchemaCache
      */
     protected function sanitizeTag(string $tag): string
     {
-        return strtr($tag, '.:/', '_--');
+        $sanitizedTag = preg_replace('/[^a-zA-Z0-9_%\-&]/', '_', $tag);
+        return substr($sanitizedTag, 0, 250);
     }
 
     /**
