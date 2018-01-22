@@ -29,7 +29,7 @@ class Package extends BasePackage
         if (!$context->isProduction()) {
             $dispatcher->connect(Sequence::class, 'afterInvokeStep', function (Step $step) use ($bootstrap, $dispatcher) {
                 if ($step->getIdentifier() === 'neos.flow:resources') {
-                    $dispatcher->connect(FileMonitor::class, 'filesHaveChanged', SchemaCache::class, 'flushOnFileChanges');$dispatcher->connect(FileMonitor::class, 'filesHaveChanged', SchemaCache::class, 'flushOnFileChanges');
+                    $dispatcher->connect(FileMonitor::class, 'filesHaveChanged', SchemaCache::class, 'flushOnFileChanges');
                     $graphQlFileMonitor = FileMonitor::createFileMonitorAtBoot(self::FILE_MONITOR_IDENTIFIER, $bootstrap);
                     $configurationManager = $bootstrap->getEarlyInstance(ConfigurationManager::class);
                     $endpoints = $configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Wwwision.GraphQL.endpoints');
