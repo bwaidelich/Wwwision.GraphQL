@@ -11,7 +11,12 @@ use Neos\Flow\ObjectManagement\ObjectManagerInterface;
 use Wwwision\GraphQL\Package;
 use Wwwision\GraphQL\Resolver;
 
-class SchemaCache
+/**
+ * This class is responsible for writing and restoring a graphql schema to and from the
+ * PhpFrontend cache.
+ * Schemas are also decorated with their respective resolvers
+ */
+final class SchemaCache
 {
     /**
      * @var PhpFrontend
