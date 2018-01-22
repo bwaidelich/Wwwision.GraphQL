@@ -19,11 +19,13 @@ use Wwwision\GraphQL\Resolver;
 final class SchemaCache
 {
     /**
+     * @Flow\Inject
      * @var PhpFrontend
      */
     protected $cache;
 
     /**
+     * @Flow\InjectConfiguration("endpoints")
      * @var array
      */
     protected $endpointsConfiguration;
@@ -33,22 +35,6 @@ final class SchemaCache
      * @var ObjectManagerInterface
      */
     protected $objectManager;
-
-    /**
-     * @param PhpFrontend $cache
-     */
-    public function injectCache(PhpFrontend $cache)
-    {
-        $this->cache = $cache;
-    }
-
-    /**
-     * @param array $settings
-     */
-    public function injectSettings(array $settings)
-    {
-        $this->endpointsConfiguration = $settings['endpoints'];
-    }
 
     /**
      * @param string $tag
