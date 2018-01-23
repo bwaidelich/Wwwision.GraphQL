@@ -72,7 +72,7 @@ class SchemaService
     }
 
     /**
-     * @param string $source
+     * @param string|object|array $source
      * @param array $args
      * @param GraphQLContext $context
      * @param ResolveInfo $info
