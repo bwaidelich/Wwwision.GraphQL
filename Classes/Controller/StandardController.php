@@ -2,7 +2,8 @@
 namespace Wwwision\GraphQL\Controller;
 
 use GraphQL\GraphQL;
-use GraphQL\Schema;
+use GraphQL\Type\Schema;
+use GraphQL\Type\SchemaConfig;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Controller\ActionController;
 use Wwwision\GraphQL\GraphQLContext;
@@ -56,12 +57,17 @@ class StandardController extends ActionController
             $variables = json_decode($this->request->getArgument('variables'), true);
         }
 
-        $querySchema = $this->typeResolver->get($this->settings['endpoints'][$endpoint]['querySchema']);
-        $mutationSchema = isset($this->settings['endpoints'][$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']) : null;
-        $subscriptionSchema = isset($this->settings['endpoints'][$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']) : null;
-        $schema = new Schema($querySchema, $mutationSchema, $subscriptionSchema);
+        $schemaConfig = SchemaConfig::create()
+            ->setQuery($this->typeResolver->get($this->settings['endpoints'][$endpoint]['querySchema']));
+        if (isset($this->settings['endpoints'][$endpoint]['mutationSchema'])) {
+            $schemaConfig->setMutation($this->typeResolver->get($this->settings['endpoints'][$endpoint]['mutationSchema']));
+        }
+        if (isset($this->settings['endpoints'][$endpoint]['subscriptionSchema'])) {
+            $schemaConfig->setSubscription($this->typeResolver->get($this->settings['endpoints'][$endpoint]['subscriptionSchema']));
+        }
+        $schema = new Schema($schemaConfig);
         $context = new GraphQLContext($this->request->getHttpRequest());
-        $result = GraphQL::executeAndReturnResult($schema, $query, null, $context, $variables, $operationName);
+        $result = GraphQL::executeQuery($schema, $query, null, $context, $variables, $operationName);
         $this->view->assign('result', $result);
     }
 
