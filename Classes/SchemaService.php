@@ -1,12 +1,17 @@
 <?php
 namespace Wwwision\GraphQL;
 
+use GraphQL\Language\AST\DocumentNode;
+use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\SchemaConfig;
+use GraphQL\Utils\BuildSchema;
+use Neos\Cache\Frontend\VariableFrontend;
 use Neos\Flow\Annotations as Flow;
 use GraphQL\Type\Schema;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
+use Neos\Utility\Files;
 use Neos\Utility\ObjectAccess;
-use Wwwision\GraphQL\Cache\SchemaCache;
 
 /**
  * @Flow\Scope("singleton")
@@ -17,7 +22,7 @@ class SchemaService
      * @Flow\InjectConfiguration(path="endpoints")
      * @var array
      */
-    protected $endpointConfiguration;
+    protected $endpointsConfiguration;
 
     /**
      * @Flow\Inject
@@ -33,46 +38,90 @@ class SchemaService
 
     /**
      * @Flow\Inject
-     * @var SchemaCache
+     * @var VariableFrontend
      */
     protected $schemaCache;
 
     /**
+     * Returns the GraphQL Schema for a given $endpoint
+     *
      * @param string $endpoint
      * @return Schema
      */
     public function getSchemaForEndpoint(string $endpoint): Schema
     {
         $this->verifySettings($endpoint);
+        $endpointConfiguration = $this->endpointsConfiguration[$endpoint];
 
-        if (isset($this->endpointConfiguration[$endpoint]['querySchema'])) {
-            $querySchema = $this->typeResolver->get($this->endpointConfiguration[$endpoint]['querySchema']);
-            $mutationSchema = isset($this->endpointConfiguration[$endpoint]['mutationSchema']) ? $this->typeResolver->get($this->endpointConfiguration[$endpoint]['mutationSchema']) : null;
-            $subscriptionSchema = isset($this->endpointConfiguration[$endpoint]['subscriptionSchema']) ? $this->typeResolver->get($this->endpointConfiguration[$endpoint]['subscriptionSchema']) : null;
-
-            return new Schema([
-                'query' => $querySchema,
-                'mutation' => $mutationSchema,
-                'subscription' => $subscriptionSchema
-            ]);
+        if (isset($endpointConfiguration['querySchema'])) {
+            $schemaConfig = SchemaConfig::create()
+                ->setQuery($this->typeResolver->get($endpointConfiguration['querySchema']));
+            if (isset($endpointConfiguration['mutationSchema'])) {
+                $schemaConfig->setMutation($this->typeResolver->get($endpointConfiguration['mutationSchema']));
+            }
+            if (isset($endpointConfiguration['subscriptionSchema'])) {
+                $schemaConfig->setSubscription($this->typeResolver->get($endpointConfiguration['subscriptionSchema']));
+            }
+            return new Schema($schemaConfig);
         }
 
-        return $this->schemaCache->getForEndpoint($endpoint);
+        if ($this->schemaCache->has($endpoint)) {
+            $documentNode = $this->schemaCache->get($endpoint);
+        } else {
+            $schemaPathAndFilename = $endpointConfiguration['schema'];
+            $content = Files::getFileContents($schemaPathAndFilename);
+            $documentNode = Parser::parse($content);
+            $this->schemaCache->set($endpoint, $documentNode, [md5($schemaPathAndFilename)]);
+        }
+
+        $resolverConfiguration = $endpointConfiguration['resolvers'] ?? [];
+        $resolverPathPattern = $endpointConfiguration['resolverPathPattern'] ?? null;
+        /** @var Resolver[] $resolvers */
+        $resolvers = [];
+        return BuildSchema::build($documentNode, function ($config) use ($resolvers, $resolverConfiguration, $resolverPathPattern) {
+            $name = $config['name'];
+
+            if (!isset($resolvers[$name])) {
+                if (isset($resolverConfiguration[$name])) {
+                    $resolvers[$name] = $this->objectManager->get($resolverConfiguration[$name]);
+                } elseif ($resolverPathPattern !== null) {
+                    $possibleResolverClassName = str_replace('{Type}', $name, $resolverPathPattern);
+                    if ($this->objectManager->isRegistered($possibleResolverClassName)) {
+                        $resolvers[$name] = $this->objectManager->get($possibleResolverClassName);
+                    }
+                }
+            }
+            if (isset($resolvers[$name])) {
+                return $resolvers[$name]->decorateTypeConfig($config);
+            }
+            return $config;
+        });
     }
 
+    /**
+     * Verifies the settings for a given $endpoint and throws an exception if they are not valid
+     *
+     * @param string $endpoint
+     * @return void
+     * @throws \InvalidArgumentException if the settings are incorrect
+     */
     public function verifySettings(string $endpoint)
     {
-        if (!isset($this->endpointConfiguration[$endpoint])) {
+        if (!isset($this->endpointsConfiguration[$endpoint])) {
             throw new \InvalidArgumentException(sprintf('The endpoint "%s" is not configured.', $endpoint), 1461435428);
         }
 
-        if (!isset($this->endpointConfiguration[$endpoint]['schema']) && !isset($this->endpointConfiguration[$endpoint]['querySchema'])) {
+        if (!isset($this->endpointsConfiguration[$endpoint]['schema']) && !isset($this->endpointsConfiguration[$endpoint]['querySchema'])) {
             throw new \InvalidArgumentException(sprintf('There is no root query schema configured for endpoint "%s".', $endpoint), 1461435432);
+        }
+
+        if (isset($this->endpointsConfiguration[$endpoint]['schema']) && !file_exists($this->endpointsConfiguration[$endpoint]['schema'])) {
+            throw new \InvalidArgumentException(sprintf('The Schema file configured for endpoint "%s" does not exist at: "%s".', $endpoint, $this->endpointsConfiguration[$endpoint]['schema']), 1516719329);
         }
     }
 
     /**
-     * @param string $source
+     * @param string|object|array $source
      * @param array $args
      * @param GraphQLContext $context
      * @param ResolveInfo $info
@@ -98,5 +147,34 @@ class SchemaService
         }
 
         return $property;
+    }
+
+
+    /**
+     * Builds the schema for the given $endpoint and saves it in the cache
+     *
+     * @param string $endpoint
+     * @return DocumentNode
+     */
+    private function buildSchemaForEndpoint(string $endpoint)
+    {
+        $schemaPathAndFilename = $this->endpointsConfiguration[$endpoint]['schema'];
+        $content = Files::getFileContents($schemaPathAndFilename);
+        $documentNode = Parser::parse($content);
+        $this->schemaCache->set($endpoint, $documentNode, [md5($schemaPathAndFilename)]);
+        return $documentNode;
+    }
+
+    /**
+     * @return void
+     */
+    public function warmupCaches()
+    {
+        foreach($this->endpointsConfiguration as $endpoint => $endpointConfiguration) {
+            if (!isset($endpointConfiguration['schema'])) {
+                continue;
+            }
+            $this->buildSchemaForEndpoint($endpoint);
+        }
     }
 }

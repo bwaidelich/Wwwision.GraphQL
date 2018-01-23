@@ -1,6 +1,6 @@
-Wwwision\GraphQL\Cache\SchemaCache:
+Wwwision\GraphQL\SchemaService:
   properties:
-    cache:
+    'schemaCache':
       object:
         factoryObjectName: Neos\Flow\Cache\CacheManager
         factoryMethodName: getCache
