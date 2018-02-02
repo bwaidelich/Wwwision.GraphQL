@@ -4,7 +4,7 @@ namespace Wwwision\GraphQL;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 
-class Resolver
+abstract class AbstractResolver implements ResolverInterface
 {
     /**
      * @param $value
