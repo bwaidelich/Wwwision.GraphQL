@@ -1,7 +1,7 @@
 <?php
 namespace Wwwision\GraphQL;
 
-abstract class ScalarResolver implements ResolverInterface
+abstract class AbstractScalarResolver implements ResolverInterface
 {
 
     /**
