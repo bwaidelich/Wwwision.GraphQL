@@ -1,5 +1,5 @@
 -
-  name: 'graphql - GraphiQL UI'
+  name: 'graphql - GraphQL Playground'
   uriPattern: '<endpoint>'
   defaults:
     '@package':    'Wwwision.GraphQL'
