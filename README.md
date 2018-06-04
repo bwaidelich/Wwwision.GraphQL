@@ -129,3 +129,52 @@ use Wwwision\GraphQL\GraphQLContext;
 `$value` is the object containing the field. Its value is `null` on the root mutation/query.
 `$args` is the array of arguments specified for that field. It's an empty array if no arguments have been specified.
 `$context` is an instance of the `GraphQLContext` with a getter for the current HTTP request.
+
+## Define Schemas using the GraphQL Schema language
+
+Since version 3.0 schemas can be defined using the [GraphQL Schema language](https://graphql.org/learn/schema/).
+
+Routes are configured like above, but in the endpoint settings instead of the `querySchema` the schema file and so called
+`resolvers` are configured like so:
+
+```yaml
+Wwwision:
+  GraphQL:
+    endpoints:
+      'test':
+        schema: 'resource://Wwwision.Test/Private/GraphQL/schema.graphql'
+        resolvers:
+          'Query': 'Wwwision\Test\ExampleResolver'
+```
+
+The corresponding schema could look like:
+
+```graphql
+schema {
+    query: Query
+}
+
+type Query {
+    # some description
+    ping(name: String!): String
+}
+```
+
+And the resolver like:
+
+```php
+<?php
+namespace Your\Package;
+
+use Wwwision\GraphQL\AbstractResolver;
+
+class ExampleResolver extends AbstractResolver
+{
+
+    public function ping($root = null, array $variables): string
+    {
+        return 'pong, ' . $variables['name'];
+    }
+
+}
+```
