@@ -11,7 +11,7 @@ It is a wrapper for the [PHP port of webonyx](https://github.com/webonyx/graphql
 * A `TypeResolver` that allows for easy interdependency between complex GraphQL type definitions
 * The `AccessibleObject` and `IterableAccessibleObject` wrappers that make it possible to expose arbitrary objects to
   the GraphQL API
-* A `StandardController` that renders the [GraphiQL IDE](https://github.com/graphql/graphiql) and acts as dispatcher
+* A `StandardController` that renders the [GraphQL Playground](https://github.com/prismagraphql/graphql-playground) and acts as dispatcher
   for API calls
 * A HTTP Component that responds to `OPTIONS` requests correctly (required for CORS preflight requests for example)
 * A custom `GraphQLContext` that is available in all resolvers and allows access to the current HTTP Request
@@ -102,9 +102,9 @@ activate routes in your global `Routes.yaml` file:
         'endpoint': 'test'
 ```
 
-**Congratulations**, your first GraphQL API is done and you should be able to invoke the GraphiQL IDE by browsing to `/test`:
+**Congratulations**, your first GraphQL API is done and you should be able to invoke the GraphQL Playground by browsing to `/test`:
 
-![](graphiql.png)
+![](playground.png)
 
 For a more advanced example, have a look at the [Neos Content Repository implementation](https://github.com/bwaidelich/Wwwision.Neos.GraphQL)
 
