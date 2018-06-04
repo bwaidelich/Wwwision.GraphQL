@@ -178,3 +178,51 @@ class ExampleResolver extends AbstractResolver
 
 }
 ```
+
+## Security
+
+In the GraphQL layer of your application you should not do domain specific i.e. critical operations.
+Those should be encapsulated in corresponding services. Likewise the final protection (authentication, authorization)
+should happen in those services.
+
+Nevertheless the GraphQL Playground is not meant to be exposed to the public web. And maybe the 
+GraphQL API should not be callable by unauthenticated requests, either.
+The easiest way to protect those is a simple `Policy.yaml` like the following:
+
+```yaml
+privilegeTargets:
+
+  'Neos\Flow\Security\Authorization\Privilege\Method\MethodPrivilege':
+    'Wwwision.GraphQL:Playground.Blacklist':
+      matcher: 'method(Wwwision\GraphQL\Controller\StandardController->indexAction())'
+    'Wwwision.GraphQL:Api.Blacklist':
+      matcher: 'method(Wwwision\GraphQL\Controller\StandardController->queryAction())'
+    'Wwwision.GraphQL:Playground':
+      matcher: 'method(Wwwision\GraphQL\Controller\StandardController->indexAction(endpoint == "{parameters.endpoint}"))'
+      parameters:
+        'endpoint':
+          className: 'Neos\Flow\Security\Authorization\Privilege\Parameter\StringPrivilegeParameter'
+    'Wwwision.GraphQL:Api':
+      matcher: 'method(Wwwision\GraphQL\Controller\StandardController->queryAction(endpoint == "{parameters.endpoint}"))'
+      parameters:
+        'endpoint':
+          className: 'Neos\Flow\Security\Authorization\Privilege\Parameter\StringPrivilegeParameter'
+```
+
+With the two blacklist privileges calls to the endpoints are forbidden by default (this is not required
+if you use this package with Neos because that already blocks controller actions by default).
+The other two privileges allow you to selectively grant access to a given endpoint like so:
+
+
+```yaml
+roles:
+  'Neos.Flow:Everybody':
+    privileges:
+      -
+        privilegeTarget: 'Wwwision.GraphQL:Api'
+        parameters:
+          'endpoint': 'test'
+        permission: GRANT
+```
+
+This would re-enable the GraphQL API (POST requests) for any user, but keep the Playground blocked.
