@@ -78,7 +78,7 @@ class SchemaService
         $resolverPathPattern = $endpointConfiguration['resolverPathPattern'] ?? null;
         /** @var ResolverInterface[] $resolvers */
         $resolvers = [];
-        return BuildSchema::build($documentNode, function ($config) use ($resolvers, $resolverConfiguration, $resolverPathPattern) {
+        return BuildSchema::build($documentNode, function ($config) use (&$resolvers, $resolverConfiguration, $resolverPathPattern) {
             $name = $config['name'];
 
             if (!isset($resolvers[$name])) {

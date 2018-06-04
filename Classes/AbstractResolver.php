@@ -24,16 +24,22 @@ abstract class AbstractResolver implements ResolverInterface
      */
     public function decorateTypeConfig(array $typeConfig)
     {
-        $fields = $typeConfig['fields']();
-
         $typeConfig['resolveType'] = [$this, 'resolveType'];
-        $typeConfig['fields'] = &$fields;
-        foreach($fields as $name => &$config) {
-            $resolveMethod = [$this, $name];
-            if (is_callable($resolveMethod)) {
-                $config['resolve'] = $resolveMethod;
+        $fields = $typeConfig['fields'];
+
+        $typeConfig['fields'] = function () use ($fields) {
+            $resolvedFields = [];
+            foreach($fields() as $name => $config) {
+                $resolveMethod = [$this, $name];
+                if (is_callable($resolveMethod)) {
+                    $config['resolve'] = $resolveMethod;
+                }
+
+                $resolvedFields[$name] = $config;
             }
-        }
+
+            return $resolvedFields;
+        };
 
         return $typeConfig;
     }
