@@ -65,13 +65,14 @@ class SchemaService
             return new Schema($schemaConfig);
         }
 
-        if ($this->schemaCache->has($endpoint)) {
-            $documentNode = $this->schemaCache->get($endpoint);
+        $cacheKey = urlencode($endpoint);
+        if ($this->schemaCache->has($cacheKey)) {
+            $documentNode = $this->schemaCache->get($cacheKey);
         } else {
             $schemaPathAndFilename = $endpointConfiguration['schema'];
             $content = Files::getFileContents($schemaPathAndFilename);
             $documentNode = Parser::parse($content);
-            $this->schemaCache->set($endpoint, $documentNode);
+            $this->schemaCache->set($cacheKey, $documentNode);
         }
 
         $resolverConfiguration = $endpointConfiguration['resolvers'] ?? [];
