@@ -162,7 +162,7 @@ class SchemaService
         $schemaPathAndFilename = $this->endpointsConfiguration[$endpoint]['schema'];
         $content = Files::getFileContents($schemaPathAndFilename);
         $documentNode = Parser::parse($content);
-        $this->schemaCache->set($endpoint, $documentNode, [md5($schemaPathAndFilename)]);
+        $this->schemaCache->set(urlencode($endpoint), $documentNode, [md5($schemaPathAndFilename)]);
         return $documentNode;
     }
 
