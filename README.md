@@ -45,7 +45,7 @@ class ExampleRootQuery extends ObjectType
      */
     public function __construct(TypeResolver $typeResolver)
     {
-        return parent::__construct([
+        parent::__construct([
             'name' => 'ExampleRootQuery',
             'fields' => [
                 'ping' => [
