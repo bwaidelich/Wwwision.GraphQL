@@ -83,6 +83,9 @@ class AccessibleObject implements \ArrayAccess
             return (boolean)call_user_func([$this->object, $propertyName]);
         }
         $result = ObjectAccess::getProperty($this->object, $propertyName);
+	    if ($result instanceof \IteratorAggregate) {
+		    return new IterableAccessibleObject($result->getIterator());
+	    }
         if (is_array($result) || $result instanceof \Iterator) {
             return new IterableAccessibleObject($result);
         }
