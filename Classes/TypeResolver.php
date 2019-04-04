@@ -17,10 +17,12 @@ use Neos\Flow\Annotations as Flow;
  */
 class TypeResolver
 {
+    private const INITIALIZING = '__initializing__';
+
     /**
      * @var ObjectType[]
      */
-    private $types;
+    private $types = [];
 
     /**
      * @param string $typeClassName
@@ -34,11 +36,13 @@ class TypeResolver
         if (!is_subclass_of($typeClassName, Type::class)) {
             throw new \InvalidArgumentException(sprintf('The TypeResolver can only resolve types extending "GraphQL\Type\Definition\Type", got "%s"', $typeClassName), 1461436398);
         }
-        if (!isset($this->types[$typeClassName])) {
-            // forward recursive requests of the same type to a closure to prevent endless loops
-            $this->types[$typeClassName] = function() use ($typeClassName) { return $this->get($typeClassName); };
-
+        if (!array_key_exists($typeClassName, $this->types)) {
+            // The following code seems weird but it is a way to detect circular dependencies (see
+            $this->types[$typeClassName] = self::INITIALIZING;
             $this->types[$typeClassName] = new $typeClassName($this);
+        }
+        if ($this->types[$typeClassName] === self::INITIALIZING) {
+            throw new \RuntimeException(sprintf('The GraphQL Type "%s" seems to have circular dependencies. Please define the fields as callbacks to prevent this error.', $typeClassName), 1554382971);
         }
         return $this->types[$typeClassName];
     }

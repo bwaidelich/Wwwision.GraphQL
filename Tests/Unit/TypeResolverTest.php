@@ -2,7 +2,8 @@
 namespace Wwwision\GraphQL\Tests\Unit;
 
 use Neos\Flow\Tests\UnitTestCase;
-use Wwwision\GraphQL\Tests\Unit\Fixtures\ExampleType;
+use Wwwision\GraphQL\Tests\Unit\Fixtures\InvalidExampleType;
+use Wwwision\GraphQL\Tests\Unit\Fixtures\ValidExampleType;
 use Wwwision\GraphQL\TypeResolver;
 
 class TypeResolverTest extends UnitTestCase
@@ -39,10 +40,19 @@ class TypeResolverTest extends UnitTestCase
     /**
      * @test
      */
+    public function getThrowsExceptionIfTypeHasCircularDependenciesWithoutCallbacks()
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->typeResolver->get(InvalidExampleType::class);
+    }
+
+    /**
+     * @test
+     */
     public function getSupportsRecursiveTypes()
     {
-        $exampleType = $this->typeResolver->get(ExampleType::class);
-        $this->assertSame('ExampleType', $exampleType->name);
+        $exampleType = $this->typeResolver->get(ValidExampleType::class);
+        $this->assertSame('ValidExampleType', $exampleType->name);
     }
 
     /**
@@ -50,8 +60,8 @@ class TypeResolverTest extends UnitTestCase
      */
     public function getReturnsTheSameInstancePerType()
     {
-        $exampleType1 = $this->typeResolver->get(ExampleType::class);
-        $exampleType2 = $this->typeResolver->get(ExampleType::class);
+        $exampleType1 = $this->typeResolver->get(ValidExampleType::class);
+        $exampleType2 = $this->typeResolver->get(ValidExampleType::class);
         $this->assertSame($exampleType1, $exampleType2);
     }
 }

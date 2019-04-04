@@ -9,18 +9,19 @@ use Wwwision\GraphQL\TypeResolver;
 /**
  * Dummy type for the TypeResolver tests
  */
-class ExampleType extends ObjectType
+class InvalidExampleType extends ObjectType
 {
     /**
      * @param TypeResolver $typeResolver
      */
     public function __construct(TypeResolver $typeResolver)
     {
-        return parent::__construct([
-            'name' => 'ExampleType',
+        parent::__construct([
+            'name' => 'InvalidExampleType',
             'fields' => [
                 'someString' => ['type' => Type::string()],
-                'selfReference' => ['type' => $typeResolver->get(ExampleType::class)],
+                // for circular dependencies fields must be declared as callback, see https://webonyx.github.io/graphql-php/type-system/object-types/#recurring-and-circular-types
+                'selfReference' => ['type' => $typeResolver->get(self::class)],
             ],
         ]);
     }
