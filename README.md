@@ -130,6 +130,67 @@ use Wwwision\GraphQL\GraphQLContext;
 `$args` is the array of arguments specified for that field. It's an empty array if no arguments have been specified.
 `$context` is an instance of the `GraphQLContext` with a getter for the current HTTP request.
 
+## Circular Dependencies
+
+Sometimes GraphQL types reference themselves.
+For example a type `Person` could have a field `friends` that is a list of `Person`-types itself.
+
+The following code won't work with the latest version of this package:
+
+```php
+<?php
+// ...
+
+class Person extends ObjectType
+{
+    public function __construct(TypeResolver $typeResolver)
+    {
+        parent::__construct([
+            'name' => 'Person',
+            'fields' => [
+                'name' => ['type' => Type::string()],
+                'friends' => [
+                    // THIS WON'T WORK!
+                    'type' => Type::listOf($typeResolver->get(self::class)),
+                    'resolve' => function () {
+                        // ...
+                    },
+                ],
+            ],
+        ]);
+    }
+}
+```
+To solve this, the fields can be configured as closure like described in the [graphql-php documentation](https://webonyx.github.io/graphql-php/type-system/object-types/#recurring-and-circular-types):
+
+```php
+<?php
+// ...
+
+class Person extends ObjectType
+{
+    public function __construct(TypeResolver $typeResolver)
+    {
+        parent::__construct([
+            'name' => 'Person',
+            'fields' => function() use ($typeResolver) {
+                return [
+                    'name' => ['type' => Type::string()],
+                    'friends' => [
+                        'type' => Type::listOf($typeResolver->get(self::class)),
+                        'resolve' => function () {
+                            // ...
+                        },
+                    ],
+                ];
+            }
+        ]);
+    }
+}
+```
+
+Alternatively the schema can be defined via a `*.graphql` file:
+
 ## Define Schemas using the GraphQL Schema language
 
 Since version 3.0 schemas can be defined using the [GraphQL Schema language](https://graphql.org/learn/schema/).
