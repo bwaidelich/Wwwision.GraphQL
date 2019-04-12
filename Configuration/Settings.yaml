@@ -4,6 +4,14 @@ Neos:
       chain:
         'process':
           chain:
+            'graphQLCors':
+              position: 'before graphQLOptions'
+              component: 'Wwwision\GraphQL\Http\HttpCorsComponent'
+              componentOptions:
+                headers:
+                  'Access-Control-Allow-Origin': '*'
+                  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
+                  'Access-Control-Allow-Headers': 'Content-Type,token'
             'graphQLOptions':
               position: 'before routing'
               component: 'Wwwision\GraphQL\Http\HttpOptionsComponent'
