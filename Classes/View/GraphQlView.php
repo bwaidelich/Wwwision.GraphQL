@@ -1,11 +1,12 @@
 <?php
 namespace Wwwision\GraphQL\View;
 
+use Neos\Flow\Annotations as Flow;
 use GraphQL\Error\Error;
 use GraphQL\Executor\ExecutionResult;
-use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Http\Response as HttpResponse;
-use Neos\Flow\Log\SystemLoggerInterface;
+use Neos\Flow\Http\Helper\ResponseInformationHelper;
+use Neos\Flow\Log\ThrowableStorageInterface;
+use Neos\Flow\Mvc\ActionResponse;
 use Neos\Flow\Mvc\View\AbstractView;
 use Neos\Flow\Exception as FlowException;
 
@@ -14,9 +15,9 @@ class GraphQlView extends AbstractView
 
     /**
      * @Flow\Inject
-     * @var SystemLoggerInterface
+     * @var ThrowableStorageInterface
      */
-    protected $systemLogger;
+    protected $throwableStorage;
 
     /**
      * @return string The rendered view
@@ -32,9 +33,9 @@ class GraphQlView extends AbstractView
             throw new FlowException(sprintf('The GraphQlView expects a variable "result" of type "%s", "%s" given!', ExecutionResult::class, is_object($result) ? get_class($result) : gettype($result)), 1469545198);
         }
 
-        /** @var HttpResponse $response */
+        /** @var ActionResponse $response */
         $response = $this->controllerContext->getResponse();
-        $response->setHeader('Content-Type', 'application/json');
+        $response->setContentType('application/json');
 
         return json_encode($this->formatResult($result));
     }
@@ -59,13 +60,13 @@ class GraphQlView extends AbstractView
                 ];
                 $exception = $error->getPrevious();
                 if ($exception instanceof FlowException) {
-                    $errorResult['message'] = HttpResponse::getStatusMessageByCode($exception->getStatusCode());
+                    $errorResult['message'] = ResponseInformationHelper::getStatusMessageByCode($exception->getStatusCode());
                     $errorResult['_exceptionCode'] = $exception->getCode();
                     $errorResult['_statusCode'] = $exception->getStatusCode();
                     $errorResult['_referenceCode'] = $exception->getReferenceCode();
                 }
                 if ($exception instanceof \Exception) {
-                    $this->systemLogger->logException($exception);
+                    $this->throwableStorage->logThrowable($exception);
                 }
                 return $errorResult;
             }, $executionResult->errors);
