@@ -54,6 +54,7 @@ class StandardController extends ActionController
      * @param string $operationName The operation to execute (if multiple, see GraphQL::execute())
      * @return void
      * @Flow\SkipCsrfProtection
+     * @throws \Neos\Flow\Mvc\Exception\NoSuchArgumentException
      */
     public function queryAction($endpoint, $query, $variables = null, $operationName = null)
     {

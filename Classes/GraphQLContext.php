@@ -1,7 +1,7 @@
 <?php
 namespace Wwwision\GraphQL;
 
-use Neos\Flow\Http\Request as HttpRequest;
+use Psr\Http\Message\ServerRequestInterface as HttpRequestInterface;
 
 /**
  * A custom context that will be accessible to all resolvers
@@ -9,22 +9,22 @@ use Neos\Flow\Http\Request as HttpRequest;
 final class GraphQLContext
 {
     /**
-     * @var HttpRequest
+     * @var HttpRequestInterface
      */
     private $httpRequest;
 
     /**
-     * @param HttpRequest $httpRequest
+     * @param HttpRequestInterface $httpRequest
      */
-    public function __construct(HttpRequest $httpRequest)
+    public function __construct(HttpRequestInterface $httpRequest)
     {
         $this->httpRequest = $httpRequest;
     }
 
     /**
-     * @return HttpRequest
+     * @return HttpRequestInterface
      */
-    public function getHttpRequest()
+    public function getHttpRequest(): HttpRequestInterface
     {
         return $this->httpRequest;
     }
