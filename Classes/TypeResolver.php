@@ -33,7 +33,7 @@ class TypeResolver
         if (!is_string($typeClassName)) {
             throw new \InvalidArgumentException(sprintf('Expected string, got "%s"', is_object($typeClassName) ? get_class($typeClassName) : gettype($typeClassName)), 1460065671);
         }
-        if (!is_subclass_of($typeClassName, Type::class)) {
+        if (!is_subclass_of($typeClassName, Type::class, true)) {
             throw new \InvalidArgumentException(sprintf('The TypeResolver can only resolve types extending "GraphQL\Type\Definition\Type", got "%s"', $typeClassName), 1461436398);
         }
         if (!array_key_exists($typeClassName, $this->types)) {
