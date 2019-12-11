@@ -6,17 +6,25 @@ use GraphQL\Executor\ExecutionResult;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\Response as HttpResponse;
 use Neos\Flow\Log\SystemLoggerInterface;
+use Neos\Flow\Log\ThrowableStorageInterface;
 use Neos\Flow\Mvc\View\AbstractView;
 use Neos\Flow\Exception as FlowException;
+use Psr\Log\LoggerInterface;
 
 class GraphQlView extends AbstractView
 {
 
     /**
      * @Flow\Inject
-     * @var SystemLoggerInterface
+     * @var LoggerInterface
      */
-    protected $systemLogger;
+    protected $logger;
+
+    /**
+     * @Flow\Inject
+     * @var ThrowableStorageInterface
+     */
+    protected $throwableStorage;
 
     /**
      * @return string The rendered view
@@ -65,7 +73,8 @@ class GraphQlView extends AbstractView
                     $errorResult['_referenceCode'] = $exception->getReferenceCode();
                 }
                 if ($exception instanceof \Exception) {
-                    $this->systemLogger->logException($exception);
+                    $message = $this->throwableStorage->logThrowable($exception);
+                    $this->logger->error($message);
                 }
                 return $errorResult;
             }, $executionResult->errors);
