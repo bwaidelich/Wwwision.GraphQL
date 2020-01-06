@@ -4,11 +4,11 @@ namespace Wwwision\GraphQL\View;
 use GraphQL\Error\Error;
 use GraphQL\Executor\ExecutionResult;
 use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Http\Response as HttpResponse;
-use Neos\Flow\Log\SystemLoggerInterface;
-use Neos\Flow\Log\ThrowableStorageInterface;
-use Neos\Flow\Mvc\View\AbstractView;
 use Neos\Flow\Exception as FlowException;
+use Neos\Flow\Http\Helper\ResponseInformationHelper;
+use Neos\Flow\Log\ThrowableStorageInterface;
+use Neos\Flow\Mvc\ActionResponse;
+use Neos\Flow\Mvc\View\AbstractView;
 use Psr\Log\LoggerInterface;
 
 class GraphQlView extends AbstractView
@@ -40,9 +40,8 @@ class GraphQlView extends AbstractView
             throw new FlowException(sprintf('The GraphQlView expects a variable "result" of type "%s", "%s" given!', ExecutionResult::class, is_object($result) ? get_class($result) : gettype($result)), 1469545198);
         }
 
-        /** @var HttpResponse $response */
         $response = $this->controllerContext->getResponse();
-        $response->setHeader('Content-Type', 'application/json');
+        $response->setContentType('application/json');
 
         return json_encode($this->formatResult($result));
     }
@@ -67,7 +66,7 @@ class GraphQlView extends AbstractView
                 ];
                 $exception = $error->getPrevious();
                 if ($exception instanceof FlowException) {
-                    $errorResult['message'] = HttpResponse::getStatusMessageByCode($exception->getStatusCode());
+                    $errorResult['message'] = ResponseInformationHelper::getStatusMessageByCode($exception->getStatusCode());
                     $errorResult['_exceptionCode'] = $exception->getCode();
                     $errorResult['_statusCode'] = $exception->getStatusCode();
                     $errorResult['_referenceCode'] = $exception->getReferenceCode();

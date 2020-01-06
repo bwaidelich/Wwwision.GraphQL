@@ -4,6 +4,7 @@ namespace Wwwision\GraphQL\Controller;
 use GraphQL\GraphQL;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Controller\ActionController;
+use Neos\Flow\Mvc\Exception\NoSuchArgumentException;
 use Wwwision\GraphQL\GraphQLContext;
 use Wwwision\GraphQL\SchemaService;
 use Wwwision\GraphQL\TypeResolver;
@@ -54,6 +55,7 @@ class StandardController extends ActionController
      * @param string $operationName The operation to execute (if multiple, see GraphQL::execute())
      * @return void
      * @Flow\SkipCsrfProtection
+     * @throws NoSuchArgumentException
      */
     public function queryAction($endpoint, $query, $variables = null, $operationName = null)
     {

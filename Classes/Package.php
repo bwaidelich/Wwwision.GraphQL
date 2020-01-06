@@ -9,7 +9,7 @@ use Neos\Flow\Core\Booting\Step;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Monitor\FileMonitor;
 use Neos\Flow\Package\Package as BasePackage;
-use Neos\Flow\Package\PackageManagerInterface;
+use Neos\Flow\Package\PackageManager;
 use Neos\Utility\Files;
 use Neos\Utility\Unicode\Functions;
 
@@ -41,7 +41,7 @@ class Package extends BasePackage
             $graphQlFileMonitor = FileMonitor::createFileMonitorAtBoot(self::FILE_MONITOR_IDENTIFIER, $bootstrap);
             $configurationManager = $bootstrap->getEarlyInstance(ConfigurationManager::class);
             $endpointsConfiguration = $configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Wwwision.GraphQL.endpoints');
-            $packageManager = $bootstrap->getEarlyInstance(PackageManagerInterface::class);
+            $packageManager = $bootstrap->getEarlyInstance(PackageManager::class);
 
             foreach($endpointsConfiguration as $endpointConfiguration) {
                 if (!isset($endpointConfiguration['schema'])) {
