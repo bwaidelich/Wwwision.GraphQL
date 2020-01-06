@@ -40,7 +40,6 @@ class GraphQlView extends AbstractView
             throw new FlowException(sprintf('The GraphQlView expects a variable "result" of type "%s", "%s" given!', ExecutionResult::class, is_object($result) ? get_class($result) : gettype($result)), 1469545198);
         }
 
-        /** @var ActionResponse $response */
         $response = $this->controllerContext->getResponse();
         $response->setContentType('application/json');
 
