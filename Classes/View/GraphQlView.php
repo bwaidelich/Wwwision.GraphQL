@@ -1,17 +1,24 @@
 <?php
 namespace Wwwision\GraphQL\View;
 
-use Neos\Flow\Annotations as Flow;
 use GraphQL\Error\Error;
 use GraphQL\Executor\ExecutionResult;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Exception as FlowException;
 use Neos\Flow\Http\Helper\ResponseInformationHelper;
 use Neos\Flow\Log\ThrowableStorageInterface;
 use Neos\Flow\Mvc\ActionResponse;
 use Neos\Flow\Mvc\View\AbstractView;
-use Neos\Flow\Exception as FlowException;
+use Psr\Log\LoggerInterface;
 
 class GraphQlView extends AbstractView
 {
+
+    /**
+     * @Flow\Inject
+     * @var LoggerInterface
+     */
+    protected $logger;
 
     /**
      * @Flow\Inject
@@ -66,7 +73,8 @@ class GraphQlView extends AbstractView
                     $errorResult['_referenceCode'] = $exception->getReferenceCode();
                 }
                 if ($exception instanceof \Exception) {
-                    $this->throwableStorage->logThrowable($exception);
+                    $message = $this->throwableStorage->logThrowable($exception);
+                    $this->logger->error($message);
                 }
                 return $errorResult;
             }, $executionResult->errors);

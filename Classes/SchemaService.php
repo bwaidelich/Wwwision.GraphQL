@@ -62,6 +62,13 @@ class SchemaService
             if (isset($endpointConfiguration['subscriptionSchema'])) {
                 $schemaConfig->setSubscription($this->typeResolver->get($endpointConfiguration['subscriptionSchema']));
             }
+            if (isset($endpointConfiguration['configTypes'])) {
+                $configTypes = $endpointConfiguration['configTypes'];
+                array_walk($configTypes, function (&$configType) {
+                    $configType = $this->typeResolver->get($configType);
+                });
+                $schemaConfig->setTypes($configTypes);
+            }
             return new Schema($schemaConfig);
         }
 
