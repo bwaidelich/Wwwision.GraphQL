@@ -4,7 +4,7 @@
     "name": "wwwision/graphql",
     "license": "MIT",
     "require": {
-        "neos/flow": "^6.0",
+        "neos/flow": "^7.0",
         "webonyx/graphql-php": "^0.13.0"
     },
     "autoload": {
