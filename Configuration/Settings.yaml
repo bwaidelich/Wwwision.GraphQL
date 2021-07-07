@@ -4,7 +4,7 @@ Neos:
       middlewares:
         redirect:
           position: 'before routing'
-          middleware: 'Wwwision\GraphQL\Http\HttpOptionsMidleware'
+          middleware: 'Wwwision\GraphQL\Http\HttpOptionsMiddleware'
 
 Wwwision:
   GraphQL:
