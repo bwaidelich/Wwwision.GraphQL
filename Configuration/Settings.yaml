@@ -2,7 +2,7 @@ Neos:
   Flow:
     http:
       middlewares:
-        redirect:
+        graphQlOptions:
           position: 'before routing'
           middleware: 'Wwwision\GraphQL\Http\HttpOptionsMiddleware'
 
