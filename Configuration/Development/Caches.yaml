@@ -1,0 +1,3 @@
+Wwwision_GraphQL_GraphQLSchemaCache:
+  # disable GraphQL schema caching in development mode
+  backend: Neos\Cache\Backend\NullBackend

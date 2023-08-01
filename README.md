@@ -1,289 +1,122 @@
 # Wwwision.GraphQL
 
-Easily create GraphQL APIs with Neos and Flow.
+Easily create GraphQL APIs with [https://www.neos.io/](Neos) and [https://flow.neos.io/](Flow).
 
 ## Background
 
 This package is a small collection of tools that'll make it easier to provide [GraphQL](http://graphql.org/) endpoints
 with Neos and Flow.
-It is a wrapper for the [PHP port of webonyx](https://github.com/webonyx/graphql-php) that comes with following additions:
+It is a wrapper for the [PHP port of webonyx](https://github.com/webonyx/graphql-php) that comes with automatic Schema generation from PHP code (using [wwwision/types](https://github.com/bwaidelich/types))
+and an easy-to-configure [PSR-15](https://www.php-fig.org/psr/psr-15/) compatible HTTP middleware.
 
-* A `TypeResolver` that allows for easy interdependency between complex GraphQL type definitions
-* The `AccessibleObject` and `IterableAccessibleObject` wrappers that make it possible to expose arbitrary objects to
-  the GraphQL API
-* A `StandardController` that renders the [GraphQL Playground](https://github.com/prismagraphql/graphql-playground) and acts as dispatcher
-  for API calls
-* A HTTP Component that responds to `OPTIONS` requests correctly (required for CORS preflight requests for example)
-* A custom `GraphQLContext` that is available in all resolvers and allows access to the current HTTP Request
+## Usage
 
-## Installation
+Install via  [composer](https://getcomposer.org/doc/):
 
 ```
 composer require wwwision/graphql
 ```
 
-(Refer to the [composer documentation](https://getcomposer.org/doc/) for more details)
+### Simple tutorial
 
-## Simple tutorial
-
-Create a simple Root Query definition within any Flow package:
-
-`ExampleRootQuery.php`:
+Create a class containing at least one public method with a `Query` attribute (see [wwwision/types-graphql](https://github.com/bwaidelich/types-graphql) for more details):
 
 ```php
 <?php
 namespace Your\Package;
 
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\Type;
-use Wwwision\GraphQL\TypeResolver;
+use Neos\Flow\Annotations as Flow;
+use Wwwision\TypesGraphQL\Attributes\Query;
 
-class ExampleRootQuery extends ObjectType
+#[Flow\Scope('singleton')]
+final class YourApi
 {
-    /**
-     * @param TypeResolver $typeResolver
-     */
-    public function __construct(TypeResolver $typeResolver)
-    {
-        parent::__construct([
-            'name' => 'ExampleRootQuery',
-            'fields' => [
-                'ping' => [
-                    'type' => Type::string(),
-                    'resolve' => function () {
-                        return 'pong';
-                    },
-                ],
-            ],
-        ]);
+    #[Query]
+    public function ping(string $name): string {
+        return strtoupper($name);
     }
 }
 ```
 
-Now register this endpoint like so:
-
-`Settings.yaml`:
+Now define a [virtual object](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/ObjectManagement.html#sect-virtual-objects) for the [HTTP middleware](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/Http.html#middlewares-chain)
+in some `Objects.yaml` configuration:
 
 ```yaml
-Wwwision:
-  GraphQL:
-    endpoints:
-      'test':
-        'querySchema': 'Your\Package\ExampleRootQuery'
+'Your.Package:GraphQLMiddleware':
+  className: 'Wwwision\GraphQL\GraphQLMiddleware'
+  scope: singleton
+  factoryObjectName: Wwwision\GraphQL\GraphQLMiddlewareFactory
+  arguments:
+    1:
+      value: '/graphql'
+    2:
+      value: 'Your\Package\YourApi'
 ```
 
-And, lastly, activate the corresponding routes:
-
-`Settings.yaml`:
+And, lastly, register that custom middleware in `Settings.yaml`:
 
 ```yaml
 Neos:
   Flow:
-    mvc:
-      routes:
-        'Wwwision.GraphQL':
-          variables:
-            'endpoint': 'test'
+    http:
+      middlewares:
+        'Your.Package:GraphQL':
+          position: 'before routing'
+          middleware: 'Your.Package:GraphQLMiddleware'
 ```
 
-This will make the endpoint "test" available under `/test`.
+And with that, a working GraphQL API is accessible underneath `/graphql`.
 
-Note: If you already have more specific routes in place, or want to provide multiple GraphQL endpoints you can as well
-activate routes in your global `Routes.yaml` file:
+### Complex types
 
-```yaml
--
-  name: 'GraphQL API'
-  uriPattern: '<GraphQLSubroutes>'
-  subRoutes:
-    'GraphQLSubroutes':
-      package: 'Wwwision.GraphQL'
-      variables:
-        'endpoint': 'test'
-```
-
-**Congratulations**, your first GraphQL API is done and you should be able to invoke the GraphQL Playground by browsing to `/test`:
-
-![](playground.png)
-
-For a more advanced example, have a look at the [Neos Content Repository implementation](https://github.com/bwaidelich/Wwwision.Neos.GraphQL)
-
-## Custom context
-
-Resolvers should be as simple and self-contained as possible. But sometimes it's useful to have access to the current
-HTTP request. For example in order to do explicit authentication or to render URLs.
-With v2.1+ there's a new `GraphQLContext` accessible to all resolvers that allows to access the current HTTP request:
+By default, all types with the *same namespace* as the specified API class will be resolved automatically, so you could do:
 
 ```php
-<?php
 // ...
-use Wwwision\GraphQL\GraphQLContext;
-// ...
-
-        'resolve' => function ($value, array $args, GraphQLContext $context) {
-            $baseUri = $context->getHttpRequest()->getBaseUri();
-            // ...
-        },
-```
-
-`$value` is the object containing the field. Its value is `null` on the root mutation/query.
-`$args` is the array of arguments specified for that field. It's an empty array if no arguments have been specified.
-`$context` is an instance of the `GraphQLContext` with a getter for the current HTTP request.
-
-## Circular Dependencies
-
-Sometimes GraphQL types reference themselves.
-For example a type `Person` could have a field `friends` that is a list of `Person`-types itself.
-
-The following code won't work with the latest version of this package:
-
-```php
-<?php
-// ...
-
-class Person extends ObjectType
-{
-    public function __construct(TypeResolver $typeResolver)
-    {
-        parent::__construct([
-            'name' => 'Person',
-            'fields' => [
-                'name' => ['type' => Type::string()],
-                'friends' => [
-                    // THIS WON'T WORK!
-                    'type' => Type::listOf($typeResolver->get(self::class)),
-                    'resolve' => function () {
-                        // ...
-                    },
-                ],
-            ],
-        ]);
-    }
+#[Query]
+public function ping(Name $name): Name {
+    return strtoupper($name);
 }
 ```
-To solve this, the fields can be configured as closure like described in the [graphql-php documentation](https://webonyx.github.io/graphql-php/type-system/object-types/#recurring-and-circular-types):
-
-```php
-<?php
-// ...
-
-class Person extends ObjectType
-{
-    public function __construct(TypeResolver $typeResolver)
-    {
-        parent::__construct([
-            'name' => 'Person',
-            'fields' => function() use ($typeResolver) {
-                return [
-                    'name' => ['type' => Type::string()],
-                    'friends' => [
-                        'type' => Type::listOf($typeResolver->get(self::class)),
-                        'resolve' => function () {
-                            // ...
-                        },
-                    ],
-                ];
-            }
-        ]);
-    }
-}
-```
-
-Alternatively the schema can be defined via a `*.graphql` file:
-
-## Define Schemas using the GraphQL Schema language
-
-Since version 3.0 schemas can be defined using the [GraphQL Schema language](https://graphql.org/learn/schema/).
-
-Routes are configured like above, but in the endpoint settings instead of the `querySchema` the schema file and so called
-`resolvers` are configured like so:
+as long as there is a suitable `Name` object in the same namespace (`Your\Package`).
+To support types from _different_ namespaces, those can be specified as third argument of the `GraphQLMiddlewareFactory`:
 
 ```yaml
-Wwwision:
-  GraphQL:
-    endpoints:
-      'test':
-        schema: 'resource://Wwwision.Test/Private/GraphQL/schema.graphql'
-        resolvers:
-          'Query': 'Wwwision\Test\ExampleResolver'
+'Your.Package:GraphQLMiddleware':
+  # ...
+  arguments:
+    # ...
+    # Look for classes in the following namespaces when resolving types:
+    3:
+      value:
+        - 'Your\Package\Types'
+        - 'SomeOther\Package\Commands'
 ```
 
-The corresponding schema could look like:
+### Authentication
 
-```graphql
-schema {
-    query: Query
-}
-
-type Query {
-    # some description
-    ping(name: String!): String
-}
-```
-
-And the resolver like:
-
-```php
-<?php
-namespace Your\Package;
-
-use Wwwision\GraphQL\AbstractResolver;
-
-class ExampleResolver extends AbstractResolver
-{
-
-    public function ping($root = null, array $variables): string
-    {
-        return 'pong, ' . $variables['name'];
-    }
-
-}
-```
-
-## Security
-
-In the GraphQL layer of your application you should not do domain specific i.e. critical operations.
-Those should be encapsulated in corresponding services. Likewise the final protection (authentication, authorization)
-should happen in those services.
-
-Nevertheless the GraphQL Playground is not meant to be exposed to the public web. And maybe the 
-GraphQL API should not be callable by unauthenticated requests, either.
-The easiest way to protect those is a simple `Policy.yaml` like the following:
+Commonly the GraphQL middleware is executed before the routing middleware. So the `Security\Context` is not yet initialized.
+This package allows you to "simulate" the request to an MVC controller thought in order to initialize security.
+This is done with the fourth argument of the `GraphQLMiddlewareFactory`:
 
 ```yaml
-privilegeTargets:
-
-  'Neos\Flow\Security\Authorization\Privilege\Method\MethodPrivilege':
-    'Wwwision.GraphQL:Playground.Blacklist':
-      matcher: 'method(Wwwision\GraphQL\Controller\StandardController->indexAction())'
-    'Wwwision.GraphQL:Api.Blacklist':
-      matcher: 'method(Wwwision\GraphQL\Controller\StandardController->queryAction())'
-    'Wwwision.GraphQL:Playground':
-      matcher: 'method(Wwwision\GraphQL\Controller\StandardController->indexAction(endpoint == "{parameters.endpoint}"))'
-      parameters:
-        'endpoint':
-          className: 'Neos\Flow\Security\Authorization\Privilege\Parameter\StringPrivilegeParameter'
-    'Wwwision.GraphQL:Api':
-      matcher: 'method(Wwwision\GraphQL\Controller\StandardController->queryAction(endpoint == "{parameters.endpoint}"))'
-      parameters:
-        'endpoint':
-          className: 'Neos\Flow\Security\Authorization\Privilege\Parameter\StringPrivilegeParameter'
+'Your.Package:GraphQLMiddleware':
+  # ...
+  arguments:
+    # ...
+    # Simulate a request to the Neos NodeController in order to initialize the security context and trigger the default Neos backend authentication provider
+    4:
+      value: 'Neos\Neos\Controller\Frontend\NodeController'
 ```
 
-With the two blacklist privileges calls to the endpoints are forbidden by default (this is not required
-if you use this package with Neos because that already blocks controller actions by default).
-The other two privileges allow you to selectively grant access to a given endpoint like so:
+### More
 
+See [wwwision/types](https://github.com/bwaidelich/types) and [wwwision/types-graphql](https://github.com/bwaidelich/types-graphql) for more examples and how to use more complex types.
 
-```yaml
-roles:
-  'Neos.Flow:Everybody':
-    privileges:
-      -
-        privilegeTarget: 'Wwwision.GraphQL:Api'
-        parameters:
-          'endpoint': 'test'
-        permission: GRANT
-```
+## Contribution
 
-This would re-enable the GraphQL API (POST requests) for any user, but keep the Playground blocked.
+Contributions in the form of [issues](https://github.com/bwaidelich/Wwwision.GraphQL/issues) or [pull requests](https://github.com/bwaidelich/Wwwision.GraphQL/pulls) are highly appreciated
+
+## License
+
+See [LICENSE](./LICENSE)
