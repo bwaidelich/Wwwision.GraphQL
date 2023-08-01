@@ -1,3 +1,6 @@
-Wwwision_GraphQL_Schema:
+Wwwision_GraphQL_GraphQLSchemaCache:
   frontend: Neos\Cache\Frontend\VariableFrontend
-  backend: Neos\Cache\Backend\FileBackend
+  backend: Neos\Cache\Backend\SimpleFileBackend
+  backendOptions:
+    # 0 = don't expire
+    defaultLifetime: 0

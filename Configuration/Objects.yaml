@@ -1,9 +1,13 @@
-Wwwision\GraphQL\SchemaService:
-  properties:
-    'schemaCache':
+Wwwision\GraphQL\GraphQLMiddlewareFactory:
+  arguments:
+    1:
+      setting: Wwwision.GraphQL.debugMode
+    2:
+      setting: Wwwision.GraphQL.corsOrigin
+    3:
       object:
-        factoryObjectName: Neos\Flow\Cache\CacheManager
-        factoryMethodName: getCache
+        factoryObjectName: 'Neos\Flow\Cache\CacheManager'
+        factoryMethodName: 'getCache'
         arguments:
           1:
-            value: Wwwision_GraphQL_Schema
+            value: 'Wwwision_GraphQL_GraphQLSchemaCache'

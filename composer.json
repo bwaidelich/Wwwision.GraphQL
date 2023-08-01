@@ -4,17 +4,16 @@
     "name": "wwwision/graphql",
     "license": "MIT",
     "require": {
-        "neos/flow": "^7.0",
-        "webonyx/graphql-php": "^0.13.0"
+        "neos/flow": "^7.3 || ^8.0 || ^8.1 || 8.2 || ^8.3",
+        "webonyx/graphql-php": "^15",
+        "psr/http-message": "^2"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-latest"
     },
     "autoload": {
         "psr-4": {
             "Wwwision\\GraphQL\\": "Classes"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Wwwision\\GraphQL\\Tests\\": "Tests"
         }
     },
     "extra": {

@@ -1,14 +1,5 @@
-Neos:
-  Flow:
-    http:
-      middlewares:
-        'Wwwision.GraphQL:Options':
-          position: 'before routing'
-          middleware: 'Wwwision\GraphQL\Http\HttpOptionsMiddleware'
-
 Wwwision:
   GraphQL:
-    endpoints: []
-#      'some-endpoint':
-#        'queryType': 'Some\Fully\Qualified\Namespace'
-#        'mutationType': 'Some\Fully\Qualified\Namespace'
+    debugMode: false
+    # The "Access-Control-Allow-Origin" response header
+    corsOrigin: '*'
