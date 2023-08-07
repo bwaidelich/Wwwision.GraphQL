@@ -4,7 +4,7 @@
     "name": "wwwision/graphql",
     "license": "MIT",
     "require": {
-        "neos/flow": "^7.3 || ^8.0 || ^8.1 || 8.2 || ^8.3",
+        "neos/flow": "^7.3 || ^8.0",
         "webonyx/graphql-php": "^15",
         "psr/http-message": "^1 || ^2"
     },
