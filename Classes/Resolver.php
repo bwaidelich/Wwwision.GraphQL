@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Wwwision\GraphQL;
 
 use BackedEnum;
+use GraphQL\Language\AST\InterfaceTypeDefinitionNode;
+use GraphQL\Language\AST\TypeDefinitionNode;
 use GraphQL\Server\RequestError;
 use GraphQL\Type\Definition\Argument;
-use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use InvalidArgumentException;
-
 use function Wwwision\Types\instantiate;
+
 final class Resolver
 {
     /**
@@ -45,6 +46,13 @@ final class Resolver
             $objectValue = $objectValue->value;
         }
         return $objectValue;
+    }
+
+    public function typeConfigDecorator(array $typeConfig, TypeDefinitionNode $typeDefinitionNode): array {
+        if ($typeDefinitionNode instanceof InterfaceTypeDefinitionNode) {
+            $typeConfig['resolveType'] = static fn ($value, $context, ResolveInfo $info) => $info->schema->getType(substr($value::class, strrpos($value::class, '\\') + 1));
+        }
+        return $typeConfig;
     }
 
     /**
