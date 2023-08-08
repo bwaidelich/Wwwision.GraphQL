@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Wwwision\GraphQL;
 
 use BackedEnum;
+use GraphQL\Language\AST\EnumTypeDefinitionNode;
 use GraphQL\Language\AST\InterfaceTypeDefinitionNode;
 use GraphQL\Language\AST\TypeDefinitionNode;
 use GraphQL\Server\RequestError;
@@ -14,6 +15,9 @@ use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use InvalidArgumentException;
+use Wwwision\Types\Parser;
+use Wwwision\Types\Schema\EnumCaseSchema;
+use Wwwision\Types\Schema\EnumSchema;
 use function Wwwision\Types\instantiate;
 
 final class Resolver
@@ -51,6 +55,13 @@ final class Resolver
     public function typeConfigDecorator(array $typeConfig, TypeDefinitionNode $typeDefinitionNode): array {
         if ($typeDefinitionNode instanceof InterfaceTypeDefinitionNode) {
             $typeConfig['resolveType'] = static fn ($value, $context, ResolveInfo $info) => $info->schema->getType(substr($value::class, strrpos($value::class, '\\') + 1));
+        }
+        if ($typeDefinitionNode instanceof EnumTypeDefinitionNode) {
+            $className = $this->resolveClassName($typeConfig['name']);
+            $schema = Parser::getSchema($className);
+            if ($schema instanceof EnumSchema) {
+                $typeConfig['values'] = array_map(static fn (EnumCaseSchema $caseSchema) => $caseSchema->instantiate(null), $schema->caseSchemas);
+            }
         }
         return $typeConfig;
     }
