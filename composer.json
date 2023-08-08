@@ -3,7 +3,24 @@
     "type": "neos-package",
     "name": "wwwision/graphql",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "bwaidelich",
+            "email": "b.waidelich@wwwision.de"
+        }
+    ],
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/bwaidelich"
+        },
+        {
+            "type": "paypal",
+            "url": "https://www.paypal.me/bwaidelich"
+        }
+    ],
     "require": {
+        "php": ">=8.1",
         "neos/flow": "^7.3 || ^8.0",
         "wwwision/types-graphql": "^1.0",
         "webonyx/graphql-php": "^15",
