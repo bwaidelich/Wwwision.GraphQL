@@ -14,6 +14,7 @@ use GraphQL\Utils\BuildSchema;
 use GuzzleHttp\Psr7\Response;
 use Neos\Cache\Exception;
 use Neos\Cache\Frontend\VariableFrontend;
+use Neos\Flow\Exception as FlowException;
 use Neos\Flow\Log\ThrowableStorageInterface;
 use Neos\Flow\Mvc\ActionRequest;
 use Neos\Flow\Security\Context;
@@ -121,12 +122,21 @@ final class GraphQLMiddleware implements MiddlewareInterface
 
     private function handleGraphQLErrors(array $errors, callable $formatter): array
     {
-        return array_map(function(Throwable $error) use ($formatter) {
-            if (!$error instanceof ClientAware || !$error->isClientSafe()) {
-                $this->throwableStorage->logThrowable($error);
-            }
-            return $formatter($error);
-        }, $errors);
+        return array_map(fn (Throwable $error) => $this->handleGraphQLError($error, $formatter), $errors);
+    }
+
+    private function handleGraphQLError(Throwable $error, callable $formatter): array
+    {
+        if (!$error instanceof ClientAware || !$error->isClientSafe()) {
+            $this->throwableStorage->logThrowable($error);
+        }
+        $formattedError = $formatter($error);
+        $originalException = $error->getPrevious();
+        if ($originalException instanceof FlowException) {
+            $formattedError['extensions']['statusCode'] = $originalException->getStatusCode();
+            $formattedError['extensions']['referenceCode'] = $originalException->getReferenceCode();
+        }
+        return $formattedError;
     }
 
     private function getSchema(): Schema
