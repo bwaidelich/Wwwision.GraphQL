@@ -77,12 +77,14 @@ final class GraphQLMiddleware implements MiddlewareInterface
     private function handlePostRequest(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $api = $this->serviceLocator->get($this->apiObjectName);
+        $resolver = new Resolver(
+            $api,
+            $this->typeNamespaces === [] ? [(new ReflectionClass($api))->getNamespaceName()] : $this->typeNamespaces,
+        );
         $config = ServerConfig::create()
-            ->setSchema($this->getSchema())
-            ->setFieldResolver(new Resolver(
-                $api,
-                $this->typeNamespaces === [] ? [(new ReflectionClass($api))->getNamespaceName()] : $this->typeNamespaces,
-            ))->setErrorsHandler($this->handleGraphQLErrors(...));
+            ->setSchema($this->getSchema($resolver))
+            ->setFieldResolver($resolver)
+            ->setErrorsHandler($this->handleGraphQLErrors(...));
         if ($this->debugMode) {
             $config->setDebugFlag();
         }
@@ -139,7 +141,7 @@ final class GraphQLMiddleware implements MiddlewareInterface
         return $formattedError;
     }
 
-    private function getSchema(): Schema
+    private function getSchema(Resolver $resolver): Schema
     {
         $cacheKey = md5($this->apiObjectName);
         if ($this->schemaCache->has($cacheKey)) {
@@ -159,7 +161,6 @@ final class GraphQLMiddleware implements MiddlewareInterface
                 throw new \RuntimeException(sprintf('Failed to store parsed GraphQL Scheme in cache: %s', $e->getMessage()), 1652975323, $e);
             }
         }
-
-        return BuildSchema::build($documentNode);
+        return BuildSchema::build($documentNode, $resolver->typeConfigDecorator(...));
     }
 }
