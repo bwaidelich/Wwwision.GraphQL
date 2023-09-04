@@ -15,6 +15,7 @@ use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use InvalidArgumentException;
+use UnitEnum;
 use Wwwision\Types\Parser;
 use Wwwision\Types\Schema\EnumCaseSchema;
 use Wwwision\Types\Schema\EnumSchema;
@@ -81,10 +82,10 @@ final class Resolver
     }
 
     /**
-     * @param string|bool|int|array<string, mixed>|null $argument
+     * @param string|bool|int|UnitEnum|array<string, mixed>|null $argument
      * @return string|bool|int|array<string, mixed>|object|null
      */
-    private function convertArgument(string|bool|int|array|null $argument, ?Argument $argumentDefinition): string|bool|int|array|object|null
+    private function convertArgument(string|bool|int|UnitEnum|array|null $argument, ?Argument $argumentDefinition): string|bool|int|array|object|null
     {
         if ($argument === null) {
             return null;
