@@ -19,17 +19,22 @@ use UnitEnum;
 use Wwwision\Types\Parser;
 use Wwwision\Types\Schema\EnumCaseSchema;
 use Wwwision\Types\Schema\EnumSchema;
+use Wwwision\TypesGraphQL\Types\CustomResolvers;
 use function Wwwision\Types\instantiate;
 
 final class Resolver
 {
+    private readonly CustomResolvers $customResolvers;
+
     /**
      * @param array<class-string> $typeNamespaces
      */
     public function __construct(
         private readonly object $api,
         private readonly array $typeNamespaces,
+        CustomResolvers $customResolvers = null,
     ) {
+        $this->customResolvers = $customResolvers ?? CustomResolvers::create();
     }
 
     /**
@@ -40,7 +45,10 @@ final class Resolver
         $fieldName = $info->fieldName;
         $objectValue ??= $this->api;
 
-        if (method_exists($objectValue, $fieldName)) {
+        $customResolver = $this->customResolvers->get($info->parentType->name, $fieldName);
+        if ($customResolver !== null) {
+            $objectValue = ($customResolver->callback)($objectValue, ...$this->convertArguments($args, $info->fieldDefinition));
+        } elseif (method_exists($objectValue, $fieldName)) {
             $objectValue = $objectValue->{$fieldName}(...$this->convertArguments($args, $info->fieldDefinition));
         } elseif (property_exists($objectValue, $fieldName)) {
             $objectValue = $objectValue->{$fieldName};
