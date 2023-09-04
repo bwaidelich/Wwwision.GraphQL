@@ -28,6 +28,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
 use Throwable;
 use Wwwision\TypesGraphQL\GraphQLGenerator;
+use Wwwision\TypesGraphQL\Types\CustomResolvers;
 use function array_map;
 use function json_decode;
 use function md5;
@@ -52,6 +53,7 @@ final class GraphQLMiddleware implements MiddlewareInterface
         private readonly ThrowableStorageInterface $throwableStorage,
         private readonly Context $securityContext,
         private readonly ContainerInterface $serviceLocator,
+        private readonly CustomResolvers $customResolvers,
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -80,6 +82,7 @@ final class GraphQLMiddleware implements MiddlewareInterface
         $resolver = new Resolver(
             $api,
             $this->typeNamespaces === [] ? [(new ReflectionClass($api))->getNamespaceName()] : $this->typeNamespaces,
+            $this->customResolvers,
         );
         $config = ServerConfig::create()
             ->setSchema($this->getSchema($resolver))
@@ -149,7 +152,7 @@ final class GraphQLMiddleware implements MiddlewareInterface
         } else {
             /** @var GraphQLGenerator $generator */
             $generator = $this->serviceLocator->get(GraphQLGenerator::class);
-            $schema = $generator->generate($this->apiObjectName)->render();
+            $schema = $generator->generate($this->apiObjectName, $this->customResolvers)->render();
             try {
                 $documentNode = Parser::parse($schema);
             } catch (SyntaxError $e) {

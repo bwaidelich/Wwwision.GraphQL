@@ -23,13 +23,15 @@ final class GraphQLMiddlewareFactory
         private readonly ThrowableStorageInterface $throwableStorage,
         private readonly Context $securityContext,
         private readonly ObjectManagerInterface $objectManager,
+        private readonly CustomResolversFactory $customResolversFactory,
     ) {}
 
     public function create(
         string $uriPath,
         string $apiObjectName,
         array $typeNamespaces = [],
-        string $simulateControllerObjectName = null
+        string $simulateControllerObjectName = null,
+        array $customResolversSettings = null,
     ): GraphQLMiddleware
     {
         return new GraphQLMiddleware(
@@ -45,6 +47,7 @@ final class GraphQLMiddlewareFactory
             $this->throwableStorage,
             $this->securityContext,
             $this->objectManager,
+            $this->customResolversFactory->create($customResolversSettings ?? []),
         );
     }
 }

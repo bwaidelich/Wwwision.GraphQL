@@ -109,6 +109,47 @@ This is done with the fourth argument of the `GraphQLMiddlewareFactory`:
       value: 'Neos\Neos\Controller\Frontend\NodeController'
 ```
 
+### Custom Resolvers
+
+Starting with version [5.2](https://github.com/bwaidelich/Wwwision.GraphQL/releases/tag/5.2.0) custom functions can be registered that extend the behavior of types dynamically:
+
+```yaml
+'Your.Package:GraphQLMiddleware':
+  # ...
+  arguments:
+    # ...
+    # custom resolvers
+    5:
+      'User':
+        'fullName':
+          description: 'Custom resolver for User.fullName'
+          resolverClassName: Some\Package\SomeCustomResolvers
+          resolverMethodName: 'getFullName'
+        'isAllowed':
+          resolverClassName: Some\Package\SomeCustomResolvers
+```
+
+**Note:** The `resolverMethodName` can be omitted if it is equal to the custom field name
+
+All custom resolvers have to be public functions with the extended type as first argument (and optionally additional arguments) and a specified return type
+
+For the example above, the corresponding resolver class could look like this:
+
+```php
+final class SomeCustomResolvers {
+
+    public function __construct(private readonly SomeDependency $incjection) {}
+    
+    public function getFullName(User $user): string {
+        return $user->givenName . ' ' . $user->familyName;
+    }
+    
+    public function isAllowed(User $user, Privilege $privilege): bool {
+        return $this->incjection->isUserPrivilegeAllowed($user->id, $privilege);
+    }
+}
+```
+
 ### More
 
 See [wwwision/types](https://github.com/bwaidelich/types) and [wwwision/types-graphql](https://github.com/bwaidelich/types-graphql) for more examples and how to use more complex types.
