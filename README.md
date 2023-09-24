@@ -96,7 +96,7 @@ To support types from _different_ namespaces, those can be specified as third ar
 ### Authentication
 
 Commonly the GraphQL middleware is executed before the routing middleware. So the `Security\Context` is not yet initialized.
-This package allows you to "simulate" the request to an MVC controller thought in order to initialize security.
+This package allows you to "simulate" an MVC request  though in order to initialize security.
 This is done with the fourth argument of the `GraphQLMiddlewareFactory`:
 
 ```yaml
