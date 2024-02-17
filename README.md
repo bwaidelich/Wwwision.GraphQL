@@ -120,13 +120,14 @@ Starting with version [5.2](https://github.com/bwaidelich/Wwwision.GraphQL/relea
     # ...
     # custom resolvers
     5:
-      'User':
-        'fullName':
-          description: 'Custom resolver for User.fullName'
-          resolverClassName: Some\Package\SomeCustomResolvers
-          resolverMethodName: 'getFullName'
-        'isAllowed':
-          resolverClassName: Some\Package\SomeCustomResolvers
+      value:
+        'User':
+          'fullName':
+            description: 'Custom resolver for User.fullName'
+            resolverClassName: Some\Package\SomeCustomResolvers
+            resolverMethodName: 'getFullName'
+          'isAllowed':
+            resolverClassName: Some\Package\SomeCustomResolvers
 ```
 
 **Note:** The `resolverMethodName` can be omitted if it is equal to the custom field name
