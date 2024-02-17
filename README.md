@@ -22,6 +22,7 @@ composer require wwwision/graphql
 Create a class containing at least one public method with a `Query` attribute (see [wwwision/types-graphql](https://github.com/bwaidelich/types-graphql) for more details):
 
 ```php
+// YourApi.php
 <?php
 namespace Your\Package;
 
@@ -42,20 +43,24 @@ Now define a [virtual object](https://flowframework.readthedocs.io/en/stable/The
 in some `Objects.yaml` configuration:
 
 ```yaml
+// Objects.yaml
 'Your.Package:GraphQLMiddleware':
   className: 'Wwwision\GraphQL\GraphQLMiddleware'
   scope: singleton
   factoryObjectName: Wwwision\GraphQL\GraphQLMiddlewareFactory
   arguments:
     1:
+      # GraphQL URL
       value: '/graphql'
     2:
+      # PHP Class with the Query/Mutation attributed methods
       value: 'Your\Package\YourApi'
 ```
 
 And, lastly, register that custom middleware in `Settings.yaml`:
 
 ```yaml
+// Settings.yaml
 Neos:
   Flow:
     http:
@@ -72,6 +77,7 @@ And with that, a working GraphQL API is accessible underneath `/graphql`.
 By default, all types with the *same namespace* as the specified API class will be resolved automatically, so you could do:
 
 ```php
+// YourApi.php
 // ...
 #[Query]
 public function ping(Name $name): Name {
@@ -82,6 +88,7 @@ as long as there is a suitable `Name` object in the same namespace (`Your\Packag
 To support types from _different_ namespaces, those can be specified as third argument of the `GraphQLMiddlewareFactory`:
 
 ```yaml
+// Objects.yaml
 'Your.Package:GraphQLMiddleware':
   # ...
   arguments:
@@ -100,6 +107,7 @@ This package allows you to "simulate" an MVC request  though in order to initial
 This is done with the fourth argument of the `GraphQLMiddlewareFactory`:
 
 ```yaml
+// Objects.yaml
 'Your.Package:GraphQLMiddleware':
   # ...
   arguments:
@@ -109,11 +117,16 @@ This is done with the fourth argument of the `GraphQLMiddlewareFactory`:
       value: 'Neos\Neos\Controller\Frontend\NodeController'
 ```
 
+> [!IMPORTANT]  
+> There must not be any gaps in the argument definitions due to the way Flow parses this configuration
+> To only specify the simulated controller, you can pass an empty `value: []`  array for the 3rd argument
+
 ### Custom Resolvers
 
 Starting with version [5.2](https://github.com/bwaidelich/Wwwision.GraphQL/releases/tag/5.2.0) custom functions can be registered that extend the behavior of types dynamically:
 
 ```yaml
+// Objects.yaml
 'Your.Package:GraphQLMiddleware':
   # ...
   arguments:
@@ -130,7 +143,13 @@ Starting with version [5.2](https://github.com/bwaidelich/Wwwision.GraphQL/relea
             resolverClassName: Some\Package\SomeCustomResolvers
 ```
 
-**Note:** The `resolverMethodName` can be omitted if it is equal to the custom field name
+> [!NOTE]
+> The `resolverMethodName` can be omitted if it is equal to the custom field name
+
+> [!IMPORTANT]  
+> There must not be any gaps in the argument definitions due to the way Flow parses this configuration
+> To only specify custom resolves, you can pass an empty `value: []`  array for the 3rd argument and `value: null` for the fourth
+
 
 All custom resolvers have to be public functions with the extended type as first argument (and optionally additional arguments) and a specified return type
 
