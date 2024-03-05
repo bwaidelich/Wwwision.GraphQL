@@ -174,6 +174,89 @@ final class SomeCustomResolvers {
 
 See [wwwision/types](https://github.com/bwaidelich/types) and [wwwision/types-graphql](https://github.com/bwaidelich/types-graphql) for more examples and how to use more complex types.
 
+## FAQ
+
+<details>
+<summary><b>Q: How can I implement lazy-loading?</b></summary>
+
+The major rewrite with version [5.0](https://github.com/bwaidelich/Wwwision.GraphQL/releases/tag/5.0.0) led to all fields of a type to be loaded and encoded by default.
+In my experience, that leads to a better performance due to the reduced i/o and (de)serialization that comes with lazy-loading every field.
+However, if you work with highly complex or nested types, the overhead of pre-loading all fields can be a problem.
+In that case you can simplify the structures by adding more specific rootlevel queries.
+Alternatively you can use [Custom Resolvers](#custom-resolvers).
+
+I would like to make it easier to provide lazily loaded fields (see https://github.com/bwaidelich/types-graphql/issues/6), but currently I don't have the personal need for this feature.
+</details>
+
+<details>
+<summary><b>Q: I have issues with Neos Flow proxy classes</b></summary>
+
+The [wwwision/types](https://github.com/bwaidelich/types) package, that this library is built on top of, relies on constructors to contain all involved fields (see https://github.com/bwaidelich/types/blob/main/README.md#all-state-fields-in-the-constructor).
+Flow Proxy classes (and due to a [bug](https://github.com/neos/flow-development-collection/issues/3060) that is practically every class of a Flow package) override the constructor with one that has no parameters.
+
+As a work-around you can add a `#Flow\Proxy(false)` attribute to the affected classes.
+
+I'm thinking about adding an extension point to the parser to allow proxy classes out of the box (see https://github.com/bwaidelich/types/issues/6), but currently I don't have the personal need for this feature.
+</details>
+
+<details>
+<summary><b>Q: What about a GraphQL Schema generator from doctrine entities?</b></summary>
+
+Exposing entities directly to an API can be problematic because it increases coupling and can impede maintainance. However, sometimes and especially with smaller API it is the most pragmatic solution to use the same entity classes and value objects in the core as well as "on the edge".
+Personally I would avoid exposing (or even using) doctrine entities because they tend to lead to [Anemic Domain Models](https://martinfowler.com/bliki/AnemicDomainModel.html) and couple the core domain to the infrastructure.
+Instead, I prefer to use the PHP type system as much as possible (and the [wwwision/types](https://github.com/bwaidelich/types) package for enforcing validation) and [adapters](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) to map those from/to database records.
+
+With all that, it should still be possible to derive the GraphQL schema from doctrine entities as long as the constructor contains all fields and the class is not proxied by Flow (see above):
+
+```php
+ use Doctrine\ORM\Mapping as ORM;
+ use Neos\Flow\Annotations as Flow;
+
+ /**
+  * @ORM\Entity
+  * @Flow\Proxy(false)
+  */
+class TestEntity
+{
+
+    /**
+     * @var string
+     * @ORM\Id
+     */
+    public readonly string $id;
+
+    /**
+     * @var string
+     * @ORM\Column(length=80)
+     */
+    public readonly string $title;
+
+    public function __construct(string $id, string $title) {
+        $this->id = $id;
+        $this->title = $title;
+    }
+}
+```
+
+With https://github.com/bwaidelich/types/issues/6 integration could be improved probably.
+</details>
+
+<details>
+<summary><b>Q: How to deal with breaking changes in version 5.0?</b></summary>
+
+[Version 5.0](https://github.com/bwaidelich/Wwwision.GraphQL/releases/tag/5.0.0) was a major rewrite of this package with a new foundation and philosophy.
+If that approach does not work for you at all, you can still use older versions of this package, I plan to support version 4.x for a while!
+</details>
+
+<details>
+<summary><b>Q: What about feature x?</b></summary>
+
+I mainly created this package for my own projects and those of my clients, but of course it makes me happy to see it being used elsewhere.
+So feel free to provide [feature suggestions](https://github.com/bwaidelich/Wwwision.GraphQL/issues) or even [implementations](https://github.com/bwaidelich/Wwwision.GraphQL/pulls) but please don't expect me to comply as I have to maintain this package in my free time.
+
+If you need a specific feature implemented or bug fixed, you can of course also hire me to do so!
+</details>
+
 ## Contribution
 
 Contributions in the form of [issues](https://github.com/bwaidelich/Wwwision.GraphQL/issues) or [pull requests](https://github.com/bwaidelich/Wwwision.GraphQL/pulls) are highly appreciated
