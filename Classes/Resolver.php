@@ -16,6 +16,7 @@ use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use InvalidArgumentException;
 use UnitEnum;
+use Wwwision\Types\Exception\CoerceException;
 use Wwwision\Types\Parser;
 use Wwwision\Types\Schema\EnumCaseSchema;
 use Wwwision\Types\Schema\EnumSchema;
@@ -118,6 +119,8 @@ final class Resolver
         if ($className !== null) {
             try {
                 return instantiate($className, $argument);
+            } catch (CoerceException $e) {
+                throw new RequestError($e->getMessage(), 1688654808, $e);
             } catch (InvalidArgumentException $e) {
                 throw new RequestError(sprintf('Validation error for %s: %s', $argumentType, $e->getMessage()), 1688654808, $e);
             }

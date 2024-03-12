@@ -27,6 +27,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
 use Throwable;
+use Wwwision\Types\Exception\CoerceException;
 use Wwwision\TypesGraphQL\GraphQLGenerator;
 use Wwwision\TypesGraphQL\Types\CustomResolvers;
 use function array_map;
@@ -140,6 +141,9 @@ final class GraphQLMiddleware implements MiddlewareInterface
         if ($originalException instanceof FlowException) {
             $formattedError['extensions']['statusCode'] = $originalException->getStatusCode();
             $formattedError['extensions']['referenceCode'] = $originalException->getReferenceCode();
+        }
+        if ($originalException?->getPrevious() instanceof CoerceException) {
+            $formattedError['extensions']['issues'] = $originalException->getPrevious()->issues;
         }
         return $formattedError;
     }
